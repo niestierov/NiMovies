@@ -18,6 +18,11 @@
 		9A09B6EA2B440181003668B7 /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B6E92B440181003668B7 /* AppConfiguration.swift */; };
 		9A09B6ED2B4401B9003668B7 /* ServiceLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B6EC2B4401B9003668B7 /* ServiceLocator.swift */; };
 		9A09B6EF2B440230003668B7 /* BaseRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B6EE2B440230003668B7 /* BaseRouter.swift */; };
+		9A09B6F12B4402DB003668B7 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B6F02B4402DB003668B7 /* NetworkService.swift */; };
+		9A09B6F42B440316003668B7 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B6F32B440316003668B7 /* Endpoint.swift */; };
+		9A09B6F62B440335003668B7 /* Requestable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B6F52B440335003668B7 /* Requestable.swift */; };
+		9A09B6F82B440383003668B7 /* JSONDecoder+Default.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B6F72B440383003668B7 /* JSONDecoder+Default.swift */; };
+		9A09B6FB2B443A56003668B7 /* ApiConstant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B6FA2B443A56003668B7 /* ApiConstant.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +36,12 @@
 		9A09B6E92B440181003668B7 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		9A09B6EC2B4401B9003668B7 /* ServiceLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceLocator.swift; sourceTree = "<group>"; };
 		9A09B6EE2B440230003668B7 /* BaseRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseRouter.swift; sourceTree = "<group>"; };
+		9A09B6F02B4402DB003668B7 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		9A09B6F32B440316003668B7 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
+		9A09B6F52B440335003668B7 /* Requestable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Requestable.swift; sourceTree = "<group>"; };
+		9A09B6F72B440383003668B7 /* JSONDecoder+Default.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JSONDecoder+Default.swift"; sourceTree = "<group>"; };
+		9A09B6F92B441DD7003668B7 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
+		9A09B6FA2B443A56003668B7 /* ApiConstant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiConstant.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +61,7 @@
 		9A09B6B22B43FB74003668B7 = {
 			isa = PBXGroup;
 			children = (
+				9A09B6F92B441DD7003668B7 /* Secrets.xcconfig */,
 				9A09B6BD2B43FB74003668B7 /* NiMovies */,
 				9A09B6BC2B43FB74003668B7 /* Products */,
 			);
@@ -107,6 +119,7 @@
 		9A09B6DE2B4400A8003668B7 /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				9A09B6F72B440383003668B7 /* JSONDecoder+Default.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -148,6 +161,7 @@
 		9A09B6E32B4400D0003668B7 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				9A09B6F22B4402E7003668B7 /* Network */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -181,6 +195,17 @@
 				9A09B6EC2B4401B9003668B7 /* ServiceLocator.swift */,
 			);
 			path = ServiceLocator;
+			sourceTree = "<group>";
+		};
+		9A09B6F22B4402E7003668B7 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				9A09B6F02B4402DB003668B7 /* NetworkService.swift */,
+				9A09B6F32B440316003668B7 /* Endpoint.swift */,
+				9A09B6F52B440335003668B7 /* Requestable.swift */,
+				9A09B6FA2B443A56003668B7 /* ApiConstant.swift */,
+			);
+			path = Network;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -265,10 +290,15 @@
 			files = (
 				9A09B6E82B44017C003668B7 /* AppLaunchService.swift in Sources */,
 				9A09B6EF2B440230003668B7 /* BaseRouter.swift in Sources */,
+				9A09B6F42B440316003668B7 /* Endpoint.swift in Sources */,
+				9A09B6F62B440335003668B7 /* Requestable.swift in Sources */,
 				9A09B6ED2B4401B9003668B7 /* ServiceLocator.swift in Sources */,
 				9A09B6BF2B43FB74003668B7 /* AppDelegate.swift in Sources */,
 				9A09B6EA2B440181003668B7 /* AppConfiguration.swift in Sources */,
 				9A09B6C12B43FB74003668B7 /* SceneDelegate.swift in Sources */,
+				9A09B6F12B4402DB003668B7 /* NetworkService.swift in Sources */,
+				9A09B6F82B440383003668B7 /* JSONDecoder+Default.swift in Sources */,
+				9A09B6FB2B443A56003668B7 /* ApiConstant.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
