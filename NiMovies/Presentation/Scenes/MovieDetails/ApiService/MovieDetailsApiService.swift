@@ -12,6 +12,10 @@ protocol MovieDetailsApiService {
         movieId: Int,
         completion: @escaping (Result<MovieDetailsViewState.Movie, Error>) -> Void
     )
+    func fetchMovieVideos(
+        movieId: Int,
+        completion: @escaping (Result<String, Error>) -> Void
+    )
 }
 
 final class DefaultMovieDetailsApiService: MovieDetailsApiService {
@@ -53,17 +57,49 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
             }
         }
     }
+    
+    func fetchMovieVideos(
+        movieId: Int,
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
+        let endpointPath = MovieDetailsEndpoint.videos(movieId: movieId)
+        let endpoint = Endpoint<MovieVideoResult>(
+            url: endpointPath.url,
+            parameters: endpointPath.parameters,
+            method: .get
+        )
+        
+        networkService.request(endpoint: endpoint) { response in
+            switch response {
+            case .success(let result):
+                guard let result else {
+                    return
+                }
+                let videos = result.results.compactMap {
+                    $0.key
+                }
+                
+                completion(.success(videos.first ?? ""))
+                
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
 }
 
 extension DefaultMovieDetailsApiService {
     enum MovieDetailsEndpoint {
         case details(movieId: Int)
+        case videos(movieId: Int)
         
         private var path: String {
+            let basePath = "/movie/"
             switch self {
             case .details(let movieId):
-                let id = movieId.stringValue
-                return "/movie/" + id
+                return basePath + movieId.stringValue
+            case .videos(let movieId):
+                return basePath + movieId.stringValue + "/videos"
             }
         }
         
@@ -73,7 +109,7 @@ extension DefaultMovieDetailsApiService {
             ]
             
             switch self {
-            case .details:
+            case .details, .videos:
                 break
             }
             return baseParameters

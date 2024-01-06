@@ -9,6 +9,7 @@ import Foundation
 
 protocol MovieDetailsPresenter {
     func initialLoad()
+    func didTapTrailerButton()
 }
 
 final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
@@ -37,6 +38,12 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     func initialLoad() {
         fetchMovieDetails()
     }
+    
+    func didTapTrailerButton() {
+        fetchMovieVideos { key in
+            
+        }
+    }
 }
 
 // MARK: - Private -
@@ -52,6 +59,21 @@ private extension DefaultMovieDetailsPresenter {
             case .success(let movie):
                 movieDetailsViewState.movie = movie
                 view.update(with: movie)
+            case.failure(let error):
+                view.showError(message: error.localizedDescription)
+            }
+        }
+    }
+    
+    func fetchMovieVideos(completion: @escaping (String) -> Void) {
+        apiService.fetchMovieVideos(movieId: movieId) { [weak self] result in
+            guard let self else {
+                return
+            }
+            
+            switch result {
+            case .success(let videoKey):
+                completion(videoKey)
             case.failure(let error):
                 view.showError(message: error.localizedDescription)
             }
