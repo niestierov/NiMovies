@@ -23,7 +23,7 @@ class Endpoint<T: Decodable>: Requestable {
     init(
         url: URL?,
         parameters: [String: Any] = [:],
-        method: HTTPMethod,
+        method: HTTPMethod = .get,
         encoding: ParameterEncoding = URLEncoding.default
     ) {
         self.url = url

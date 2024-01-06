@@ -1,0 +1,27 @@
+//
+//  MovieListRouter.swift
+//  NiMovies
+//
+//  Created by Denys Niestierov on 25.12.2023.
+//
+
+import UIKit
+
+protocol MovieListRouter {
+    func showNiPostDetails()
+}
+
+final class DefaultMovieListRouter: BaseRouter, MovieListRouter {
+    
+    // MARK: - Properties -
+    
+    var root: UIViewController
+    
+    // MARK: - Init -
+    
+    init(root: UIViewController) {
+        self.root = root
+    }
+    
+    func showNiPostDetails() { }
+}

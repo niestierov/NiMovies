@@ -16,5 +16,12 @@ final class DefaultAppConfiguration: AppConfiguration {
         registerServices()
     }
     
-    private func registerServices() { }
+    private func registerServices() {
+        registerNetworkService()
+    }
+
+    private func registerNetworkService() {
+        let networkService: NetworkService = DefaultNetworkService()
+        ServiceLocator.shared.register(service: networkService)
+    }
 }
