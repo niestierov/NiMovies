@@ -11,7 +11,9 @@ protocol MovieListView: AnyObject {
     func update()
     func initialUpdate()
     func showError(message: String?)
-    func showScrollToTopButton(_ isVisible: Bool)
+    func showScrollToTop(_ isVisible: Bool)
+    func showLoadingAnimation(completion: EmptyBlock? = nil)
+    func hideLoadingAnimation()
 }
 
 final class MovieListViewController: UIViewController, Alert {
@@ -145,12 +147,20 @@ extension MovieListViewController: MovieListView {
         )
     }
     
-    func showScrollToTopButton(_ isVisible: Bool) {
+    func showScrollToTop(_ isVisible: Bool) {
         UIView.animate(withDuration: 0.3) {
             self.scrollToTopButton.alpha = isVisible ? 1 : 0
         } completion: { _ in
             self.scrollToTopButton.isHidden = !isVisible
         }
+    }
+    
+    func showLoadingAnimation(completion: EmptyBlock? = nil) {
+        loadingAnimationView.start(on: self, completion: completion)
+    }
+    
+    func hideLoadingAnimation() {
+        loadingAnimationView.hide()
     }
 }
 
