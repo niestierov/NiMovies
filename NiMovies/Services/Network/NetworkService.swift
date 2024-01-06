@@ -41,7 +41,7 @@ final class DefaultNetworkService: NetworkService {
                 completion(.failure(NetworkError.invalidData))
                 return
             }
-            
+
             switch response.result {
             case .success(let result):
                 completion(.success(result))
