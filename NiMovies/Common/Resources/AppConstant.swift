@@ -8,3 +8,7 @@
 import Foundation
 
 typealias EmptyBlock = () -> Void
+
+struct AppConstant {
+    static let initialLoadingAnimationName = "InitialLoadingAnimation"
+}

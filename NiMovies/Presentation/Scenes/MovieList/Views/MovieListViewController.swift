@@ -11,7 +11,10 @@ protocol MovieListView: AnyObject {
     func update()
     func initialUpdate()
     func showError(message: String?)
-    func showScrollToTopButton(_ isVisible: Bool)
+    func showScrollToTop(_ isVisible: Bool)
+    func showLoadingAnimation(completion: EmptyBlock?)
+    func continueLoadingAnimation()
+    func hideLoadingAnimation()
 }
 
 final class MovieListViewController: UIViewController, Alert {
@@ -28,6 +31,8 @@ final class MovieListViewController: UIViewController, Alert {
     private var presenter: MovieListPresenter!
     
     // MARK: - UI Components -
+    
+    private var loadingAnimationView: LoadingAnimationView!
     
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController()
@@ -122,8 +127,12 @@ final class MovieListViewController: UIViewController, Alert {
     
     // MARK: - Internal -
     
-    func inject(presenter: MovieListPresenter) {
+    func inject(
+        presenter: MovieListPresenter,
+        loadingAnimationView: LoadingAnimationView
+    ) {
         self.presenter = presenter
+        self.loadingAnimationView = loadingAnimationView
     }
 }
 
@@ -145,12 +154,24 @@ extension MovieListViewController: MovieListView {
         )
     }
     
-    func showScrollToTopButton(_ isVisible: Bool) {
+    func showScrollToTop(_ isVisible: Bool) {
         UIView.animate(withDuration: 0.3) {
             self.scrollToTopButton.alpha = isVisible ? 1 : 0
         } completion: { _ in
             self.scrollToTopButton.isHidden = !isVisible
         }
+    }
+    
+    func showLoadingAnimation(completion: EmptyBlock? = nil) {
+        loadingAnimationView.start(on: self, completion: completion)
+    }
+    
+    func hideLoadingAnimation() {
+        loadingAnimationView.hide()
+    }
+    
+    func continueLoadingAnimation() {
+        loadingAnimationView.continueWithLoop()
     }
 }
 
