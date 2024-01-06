@@ -52,6 +52,8 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         self.view = view
         self.router = router
         self.apiService = apiService
+        
+        setupNotificationCenter()
     }
     
     // MARK: - Internal -
@@ -115,7 +117,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
             execute: searchWorkItem!
         )
     }
-    
+
     func didScrollView(at index: Int) {
         showToTopButtonIfNeeded(for: index)
         
@@ -211,6 +213,22 @@ private extension DefaultMovieListPresenter {
             view.showScrollToTop(true)
         } else if index < Constant.scrollToTopButtonScope {
             view.showScrollToTop(false)
+        }
+    }
+    
+    func setupNotificationCenter() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+    
+    @objc
+    func appDidBecomeActive() {
+        if !NetworkReachabilityService.isConnectedToInternet {
+            view.showNoInternetConnectionError()
         }
     }
 }

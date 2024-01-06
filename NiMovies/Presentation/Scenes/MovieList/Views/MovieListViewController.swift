@@ -15,6 +15,7 @@ protocol MovieListView: AnyObject {
     func showLoadingAnimation(completion: EmptyBlock?)
     func continueLoadingAnimation()
     func hideLoadingAnimation()
+    func showNoInternetConnectionError()
 }
 
 final class MovieListViewController: UIViewController, Alert {
@@ -172,6 +173,21 @@ extension MovieListViewController: MovieListView {
     
     func continueLoadingAnimation() {
         loadingAnimationView.continueWithLoop()
+    }
+    
+    func showNoInternetConnectionError() {
+        let openAppSettingAction = AlertButtonAction(
+            title: "Open settings",
+            style: .default
+        ) {
+            UIApplication.openAppSettings()
+        }
+    
+        showAlert(
+            title: AlertConstant.defaultAlertErrorTitle,
+            message: AppConstant.noInternetConnectionMessage,
+            actions: [openAppSettingAction]
+        )
     }
 }
 
