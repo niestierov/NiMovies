@@ -36,7 +36,7 @@ extension MovieListViewState {
         return movieList.results.compactMap { movie in
             let image = MovieConfiguration.basePosterUrl + (movie.backdropPath ?? "")
             let releaseDate = movie.releaseDate ?? ""
-            let title = movie.title //+ ", " + releaseDate
+            let title = movie.title
             let voteAverage = (movie.voteAverage ?? .zero).stringValue
             let genres = movie.genreIds.compactMap { genreId in
                 genreList.first { $0.id == genreId }?.name

@@ -11,7 +11,6 @@ final class MovieListCollectionViewCell: UICollectionViewCell {
     private struct Constant {
         static let defaultInset: CGFloat = 15
         static let cornerRadius: CGFloat = 10
-        static let posterImagePlaceholder = UIImage(named: "MoviePosterPlaceholder")
     }
     
     // MARK: - UI Components -
@@ -100,7 +99,7 @@ final class MovieListCollectionViewCell: UICollectionViewCell {
         
         posterImageView.setImage(
             with: movie.posterUrl,
-            placeholder: Constant.posterImagePlaceholder
+            placeholder: UIImage(named: AppConstant.moviePosterPlaceholderName)
         )
         titleLabel.text = movie.title
         genresLabel.text = movie.genres
