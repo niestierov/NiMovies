@@ -52,16 +52,16 @@ final class DefaultNetworkService: NetworkService {
     }
 }
 
-enum NetworkError: Error {
+enum NetworkError: Error, LocalizedError {
     case invalidUrl
     case invalidData
     
-    var localizedDescription: String {
+    var errorDescription: String? {
         switch self {
         case .invalidUrl:
-            return "url_invalid"
+            AppConstant.defaultErrorMessage + "The URL is invalid."
         case .invalidData:
-            return "retrieved_data_invalid"
+            AppConstant.defaultErrorMessage + "The received data is invalid."
         }
     }
 }

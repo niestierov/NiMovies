@@ -13,12 +13,12 @@ protocol StringConvertible {
 
 extension Double: StringConvertible {
     var stringValue: String {
-        return String(format: "%.1f", self)
+        String(format: "%.1f", self)
     }
 }
 
 extension Int: StringConvertible {
     var stringValue: String {
-        return String(self)
+        String(self)
     }
 }

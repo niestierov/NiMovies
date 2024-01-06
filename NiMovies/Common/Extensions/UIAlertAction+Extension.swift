@@ -12,7 +12,7 @@ extension UIAlertAction {
         title: String = "Cancel",
         handler: ((UIAlertAction) -> Void)? = nil
     ) -> UIAlertAction {
-        return UIAlertAction(
+        UIAlertAction(
             title: title,
             style: .cancel,
             handler: handler

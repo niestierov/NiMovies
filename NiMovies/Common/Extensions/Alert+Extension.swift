@@ -7,11 +7,6 @@
 
 import UIKit
 
-struct AlertConstant {
-    static let defaultAlertErrorTitle = "Error"
-    static let defaultAlertErrorMessage = "Something went wrong..."
-}
-
 protocol Alert: UIViewController {
     func showAlert(
         title: String,
@@ -22,7 +17,7 @@ protocol Alert: UIViewController {
 
 extension Alert {
     func showAlert(
-        title: String,
+        title: String = "Error",
         message: String?,
         actions: [AlertButtonAction]? = nil
     ) {

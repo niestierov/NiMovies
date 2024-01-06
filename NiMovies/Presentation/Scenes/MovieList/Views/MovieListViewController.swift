@@ -149,10 +149,7 @@ extension MovieListViewController: MovieListView {
     }
     
     func showError(message: String?) {
-        showAlert(
-            title: AlertConstant.defaultAlertErrorTitle,
-            message: message ?? AlertConstant.defaultAlertErrorMessage
-        )
+        showAlert(message: message ?? AppConstant.defaultErrorMessage)
     }
     
     func showScrollToTop(_ isVisible: Bool) {
@@ -184,7 +181,6 @@ extension MovieListViewController: MovieListView {
         }
     
         showAlert(
-            title: AlertConstant.defaultAlertErrorTitle,
             message: AppConstant.noInternetConnectionMessage,
             actions: [openAppSettingAction]
         )
@@ -247,10 +243,8 @@ extension MovieListViewController: UICollectionViewDelegate {
     func collectionView(
         _ collectionView: UICollectionView,
         didSelectItemAt indexPath: IndexPath
-    ) { 
-        guard let movie = presenter.getMovie(at: indexPath.item) else {
-            return
-        }
+    ) {
+        presenter.didSelectMovie(at: indexPath.item)
     }
 }
 

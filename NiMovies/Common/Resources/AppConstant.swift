@@ -11,6 +11,9 @@ typealias EmptyBlock = () -> Void
 
 struct AppConstant {
     static let initialLoadingAnimationName = "InitialLoadingAnimation"
-    static let noInternetConnectionMessage = "You are offline. Please, enable your WiFi or connect using cellular data."
-
+    static let noInternetConnectionMessage = """
+        You are offline. Please, enable your WiFi or connect using cellular data.
+    """
+    static let moviePosterPlaceholderName = "MoviePosterPlaceholder"
+    static let defaultErrorMessage = "Something went wrong..."
 }
