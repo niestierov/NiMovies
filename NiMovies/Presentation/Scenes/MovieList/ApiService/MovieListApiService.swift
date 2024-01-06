@@ -20,7 +20,9 @@ protocol MovieListApiService {
         genres: [MovieGenre],
         completion: @escaping (Result<[MovieListViewState.Movie], Error>) -> Void
     )
-    func fetchMoviesGenreList(completion: @escaping (Result<[MovieGenre], Error>) -> Void)
+    func fetchMoviesGenreList(
+        completion: @escaping (Result<[MovieGenre], Error>) -> Void
+    )
 }
 
 final class DefaultMovieListApiService: MovieListApiService {
@@ -65,7 +67,9 @@ final class DefaultMovieListApiService: MovieListApiService {
         )
     }
     
-    func fetchMoviesGenreList(completion: @escaping (Result<[MovieGenre], Error>) -> Void) {
+    func fetchMoviesGenreList(
+        completion: @escaping (Result<[MovieGenre], Error>) -> Void
+    ) {
         let endpointPath = MovieEndpoint.genres
         let endpoint = Endpoint<MoviesGenreList>(
             url: endpointPath.url,

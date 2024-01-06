@@ -247,10 +247,8 @@ extension MovieListViewController: UICollectionViewDelegate {
     func collectionView(
         _ collectionView: UICollectionView,
         didSelectItemAt indexPath: IndexPath
-    ) { 
-        guard let movie = presenter.getMovie(at: indexPath.item) else {
-            return
-        }
+    ) {
+        presenter.didSelectMovie(at: indexPath.item)
     }
 }
 

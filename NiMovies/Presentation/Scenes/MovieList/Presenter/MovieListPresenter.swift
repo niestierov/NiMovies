@@ -17,6 +17,7 @@ protocol MovieListPresenter {
     func searchMovies(query: String?)
     func didScrollView(at index: Int)
     func sortMovies(by sortType: MovieListSortType)
+    func didSelectMovie(at index: Int)
 }
 
 final class DefaultMovieListPresenter: MovieListPresenter {
@@ -131,6 +132,13 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         } else {
             fetchMovieList(isInitial: false)
         }
+    }
+    
+    func didSelectMovie(at index: Int) {
+        guard let id = getMovie(at: index)?.id else {
+            return
+        }
+        router.showNiPostDetails(movieId: id)
     }
 }
 
