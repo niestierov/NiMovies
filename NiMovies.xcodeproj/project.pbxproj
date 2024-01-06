@@ -43,8 +43,15 @@
 		9A6C60FB2B4971CA0051AA5C /* LoadingAnimationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6C60FA2B4971CA0051AA5C /* LoadingAnimationViewController.swift */; };
 		9A6C60FE2B497AF00051AA5C /* NetworkReachabilityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6C60FD2B497AF00051AA5C /* NetworkReachabilityService.swift */; };
 		9A7F28882B48BA4D004B2B64 /* MovieListSortType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7F28872B48BA4D004B2B64 /* MovieListSortType.swift */; };
+		9A86F0322B49CAAB008E8881 /* MovieDetailsStackViewItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A86F0312B49CAAB008E8881 /* MovieDetailsStackViewItem.swift */; };
 		9AC7EC0F2B44A12D00014E97 /* StringConvertible+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AC7EC0E2B44A12D00014E97 /* StringConvertible+Extension.swift */; };
 		9AC7EC112B44AFD100014E97 /* MovieConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AC7EC102B44AFD100014E97 /* MovieConfiguration.swift */; };
+		9AF09C7E2B498C2F00352535 /* MovieDetailsPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF09C7D2B498C2F00352535 /* MovieDetailsPresenter.swift */; };
+		9AF09C802B498C9400352535 /* MovieDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF09C7F2B498C9400352535 /* MovieDetailsViewController.swift */; };
+		9AF09C822B498D3E00352535 /* MovieDetailsResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF09C812B498D3E00352535 /* MovieDetailsResult.swift */; };
+		9AF09C842B498D5B00352535 /* MovieDetailsApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF09C832B498D5B00352535 /* MovieDetailsApiService.swift */; };
+		9AF09C862B49911D00352535 /* MovieDetailsViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF09C852B49911D00352535 /* MovieDetailsViewState.swift */; };
+		9AF09C882B49917300352535 /* MovieDetailsAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF09C872B49917300352535 /* MovieDetailsAssembly.swift */; };
 		9AFBCDD22B48321400A2367D /* UIAlertAction+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AFBCDD12B48321400A2367D /* UIAlertAction+Extension.swift */; };
 		9AFBCDD42B4832BE00A2367D /* AppConstant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AFBCDD32B4832BE00A2367D /* AppConstant.swift */; };
 		9AFBCDD62B483A5400A2367D /* UIApplication+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AFBCDD52B483A5400A2367D /* UIApplication+Extension.swift */; };
@@ -87,8 +94,15 @@
 		9A6C60FA2B4971CA0051AA5C /* LoadingAnimationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoadingAnimationViewController.swift; sourceTree = "<group>"; };
 		9A6C60FD2B497AF00051AA5C /* NetworkReachabilityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkReachabilityService.swift; sourceTree = "<group>"; };
 		9A7F28872B48BA4D004B2B64 /* MovieListSortType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieListSortType.swift; sourceTree = "<group>"; };
+		9A86F0312B49CAAB008E8881 /* MovieDetailsStackViewItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsStackViewItem.swift; sourceTree = "<group>"; };
 		9AC7EC0E2B44A12D00014E97 /* StringConvertible+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StringConvertible+Extension.swift"; sourceTree = "<group>"; };
 		9AC7EC102B44AFD100014E97 /* MovieConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieConfiguration.swift; sourceTree = "<group>"; };
+		9AF09C7D2B498C2F00352535 /* MovieDetailsPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsPresenter.swift; sourceTree = "<group>"; };
+		9AF09C7F2B498C9400352535 /* MovieDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsViewController.swift; sourceTree = "<group>"; };
+		9AF09C812B498D3E00352535 /* MovieDetailsResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsResult.swift; sourceTree = "<group>"; };
+		9AF09C832B498D5B00352535 /* MovieDetailsApiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsApiService.swift; sourceTree = "<group>"; };
+		9AF09C852B49911D00352535 /* MovieDetailsViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsViewState.swift; sourceTree = "<group>"; };
+		9AF09C872B49917300352535 /* MovieDetailsAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsAssembly.swift; sourceTree = "<group>"; };
 		9AFBCDD12B48321400A2367D /* UIAlertAction+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIAlertAction+Extension.swift"; sourceTree = "<group>"; };
 		9AFBCDD32B4832BE00A2367D /* AppConstant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstant.swift; sourceTree = "<group>"; };
 		9AFBCDD52B483A5400A2367D /* UIApplication+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+Extension.swift"; sourceTree = "<group>"; };
@@ -188,6 +202,7 @@
 			children = (
 				9A09B6C72B43FB75003668B7 /* Assets.xcassets */,
 				9AFBCDD32B4832BE00A2367D /* AppConstant.swift */,
+				9AC7EC102B44AFD100014E97 /* MovieConfiguration.swift */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -231,6 +246,7 @@
 		9A09B6E42B4400FD003668B7 /* Scenes */ = {
 			isa = PBXGroup;
 			children = (
+				9AF09C762B498BC200352535 /* MovieDetails */,
 				9A09B6FC2B44425C003668B7 /* MovieList */,
 			);
 			path = Scenes;
@@ -323,7 +339,6 @@
 			isa = PBXGroup;
 			children = (
 				9A09B7082B44425C003668B7 /* MovieListApiService.swift */,
-				9AC7EC102B44AFD100014E97 /* MovieConfiguration.swift */,
 			);
 			path = ApiService;
 			sourceTree = "<group>";
@@ -385,6 +400,68 @@
 				9A09B7202B4443A8003668B7 /* UICollectionViewLayoutProvider+Extension.swift */,
 			);
 			path = UICollectionView;
+			sourceTree = "<group>";
+		};
+		9AF09C762B498BC200352535 /* MovieDetails */ = {
+			isa = PBXGroup;
+			children = (
+				9AF09C7C2B498BE200352535 /* ApiService */,
+				9AF09C7B2B498BDF00352535 /* Model */,
+				9AF09C7A2B498BD800352535 /* ViewState */,
+				9AF09C792B498BD500352535 /* Views */,
+				9AF09C782B498BD100352535 /* Presenter */,
+				9AF09C772B498BCC00352535 /* Routing */,
+			);
+			path = MovieDetails;
+			sourceTree = "<group>";
+		};
+		9AF09C772B498BCC00352535 /* Routing */ = {
+			isa = PBXGroup;
+			children = (
+				9AF09C872B49917300352535 /* MovieDetailsAssembly.swift */,
+			);
+			path = Routing;
+			sourceTree = "<group>";
+		};
+		9AF09C782B498BD100352535 /* Presenter */ = {
+			isa = PBXGroup;
+			children = (
+				9AF09C7D2B498C2F00352535 /* MovieDetailsPresenter.swift */,
+			);
+			path = Presenter;
+			sourceTree = "<group>";
+		};
+		9AF09C792B498BD500352535 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				9AF09C7F2B498C9400352535 /* MovieDetailsViewController.swift */,
+				9A86F0312B49CAAB008E8881 /* MovieDetailsStackViewItem.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		9AF09C7A2B498BD800352535 /* ViewState */ = {
+			isa = PBXGroup;
+			children = (
+				9AF09C852B49911D00352535 /* MovieDetailsViewState.swift */,
+			);
+			path = ViewState;
+			sourceTree = "<group>";
+		};
+		9AF09C7B2B498BDF00352535 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				9AF09C812B498D3E00352535 /* MovieDetailsResult.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		9AF09C7C2B498BE200352535 /* ApiService */ = {
+			isa = PBXGroup;
+			children = (
+				9AF09C832B498D5B00352535 /* MovieDetailsApiService.swift */,
+			);
+			path = ApiService;
 			sourceTree = "<group>";
 		};
 		9AFBCDDA2B487A8700A2367D /* Custom */ = {
@@ -477,6 +554,7 @@
 			files = (
 				9A09B6E82B44017C003668B7 /* AppLaunchService.swift in Sources */,
 				9A09B7142B44425C003668B7 /* MovieListCollectionViewCell.swift in Sources */,
+				9AF09C802B498C9400352535 /* MovieDetailsViewController.swift in Sources */,
 				9A6C60FE2B497AF00051AA5C /* NetworkReachabilityService.swift in Sources */,
 				9A09B7242B4444EF003668B7 /* ImageService.swift in Sources */,
 				9AFBCDD22B48321400A2367D /* UIAlertAction+Extension.swift in Sources */,
@@ -488,12 +566,17 @@
 				9A09B6F42B440316003668B7 /* Endpoint.swift in Sources */,
 				9A09B6F62B440335003668B7 /* Requestable.swift in Sources */,
 				9A7F28882B48BA4D004B2B64 /* MovieListSortType.swift in Sources */,
+				9AF09C822B498D3E00352535 /* MovieDetailsResult.swift in Sources */,
 				9A09B6ED2B4401B9003668B7 /* ServiceLocator.swift in Sources */,
+				9AF09C842B498D5B00352535 /* MovieDetailsApiService.swift in Sources */,
 				9A09B70F2B44425C003668B7 /* MovieList.swift in Sources */,
 				9A09B6BF2B43FB74003668B7 /* AppDelegate.swift in Sources */,
+				9A86F0322B49CAAB008E8881 /* MovieDetailsStackViewItem.swift in Sources */,
 				9A09B7102B44425C003668B7 /* MovieListAssembly.swift in Sources */,
+				9AF09C7E2B498C2F00352535 /* MovieDetailsPresenter.swift in Sources */,
 				9A09B7152B44425C003668B7 /* MovieListViewController.swift in Sources */,
 				9A09B7122B44425C003668B7 /* MovieListViewState.swift in Sources */,
+				9AF09C882B49917300352535 /* MovieDetailsAssembly.swift in Sources */,
 				9A6C60FB2B4971CA0051AA5C /* LoadingAnimationViewController.swift in Sources */,
 				9A09B71B2B44436C003668B7 /* UIImageView+ImageService.swift in Sources */,
 				9A09B7192B444356003668B7 /* UICollectionView+Reusable.swift in Sources */,
@@ -503,6 +586,7 @@
 				9A09B6C12B43FB74003668B7 /* SceneDelegate.swift in Sources */,
 				9A069D072B47055C0017CC7A /* UIView+ActivityIndicator.swift in Sources */,
 				9AFBCDD42B4832BE00A2367D /* AppConstant.swift in Sources */,
+				9AF09C862B49911D00352535 /* MovieDetailsViewState.swift in Sources */,
 				9A09B71D2B444371003668B7 /* UIView+Extension.swift in Sources */,
 				9A09B6F12B4402DB003668B7 /* NetworkService.swift in Sources */,
 				9A09B7172B44434F003668B7 /* SelfIdentifiable+Extension.swift in Sources */,
