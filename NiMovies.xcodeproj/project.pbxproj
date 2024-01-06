@@ -41,6 +41,7 @@
 		9A09B7212B4443A8003668B7 /* UICollectionViewLayoutProvider+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B7202B4443A8003668B7 /* UICollectionViewLayoutProvider+Extension.swift */; };
 		9A09B7242B4444EF003668B7 /* ImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B7232B4444EF003668B7 /* ImageService.swift */; };
 		9A6C60FB2B4971CA0051AA5C /* LoadingAnimationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6C60FA2B4971CA0051AA5C /* LoadingAnimationViewController.swift */; };
+		9A6C60FE2B497AF00051AA5C /* NetworkReachabilityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6C60FD2B497AF00051AA5C /* NetworkReachabilityService.swift */; };
 		9A7F28882B48BA4D004B2B64 /* MovieListSortType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7F28872B48BA4D004B2B64 /* MovieListSortType.swift */; };
 		9AC7EC0F2B44A12D00014E97 /* StringConvertible+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AC7EC0E2B44A12D00014E97 /* StringConvertible+Extension.swift */; };
 		9AC7EC112B44AFD100014E97 /* MovieConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AC7EC102B44AFD100014E97 /* MovieConfiguration.swift */; };
@@ -84,6 +85,7 @@
 		9A09B7202B4443A8003668B7 /* UICollectionViewLayoutProvider+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UICollectionViewLayoutProvider+Extension.swift"; sourceTree = "<group>"; };
 		9A09B7232B4444EF003668B7 /* ImageService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageService.swift; sourceTree = "<group>"; };
 		9A6C60FA2B4971CA0051AA5C /* LoadingAnimationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoadingAnimationViewController.swift; sourceTree = "<group>"; };
+		9A6C60FD2B497AF00051AA5C /* NetworkReachabilityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkReachabilityService.swift; sourceTree = "<group>"; };
 		9A7F28872B48BA4D004B2B64 /* MovieListSortType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieListSortType.swift; sourceTree = "<group>"; };
 		9AC7EC0E2B44A12D00014E97 /* StringConvertible+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StringConvertible+Extension.swift"; sourceTree = "<group>"; };
 		9AC7EC102B44AFD100014E97 /* MovieConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieConfiguration.swift; sourceTree = "<group>"; };
@@ -220,6 +222,7 @@
 			isa = PBXGroup;
 			children = (
 				9A09B6F22B4402E7003668B7 /* Network */,
+				9A6C60FC2B497AE80051AA5C /* NetworkReachability */,
 				9A09B7222B4444EF003668B7 /* ImageService */,
 			);
 			path = Services;
@@ -358,6 +361,14 @@
 			path = LoadingAnimation;
 			sourceTree = "<group>";
 		};
+		9A6C60FC2B497AE80051AA5C /* NetworkReachability */ = {
+			isa = PBXGroup;
+			children = (
+				9A6C60FD2B497AF00051AA5C /* NetworkReachabilityService.swift */,
+			);
+			path = NetworkReachability;
+			sourceTree = "<group>";
+		};
 		9A7F28892B48C6F6004B2B64 /* UIView */ = {
 			isa = PBXGroup;
 			children = (
@@ -466,6 +477,7 @@
 			files = (
 				9A09B6E82B44017C003668B7 /* AppLaunchService.swift in Sources */,
 				9A09B7142B44425C003668B7 /* MovieListCollectionViewCell.swift in Sources */,
+				9A6C60FE2B497AF00051AA5C /* NetworkReachabilityService.swift in Sources */,
 				9A09B7242B4444EF003668B7 /* ImageService.swift in Sources */,
 				9AFBCDD22B48321400A2367D /* UIAlertAction+Extension.swift in Sources */,
 				9A09B7132B44425C003668B7 /* MovieListApiService.swift in Sources */,
