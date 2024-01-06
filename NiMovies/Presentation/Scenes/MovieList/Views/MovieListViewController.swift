@@ -13,6 +13,7 @@ protocol MovieListView: AnyObject {
     func showError(message: String?)
     func showScrollToTop(_ isVisible: Bool)
     func showLoadingAnimation(completion: EmptyBlock?)
+    func continueLoadingAnimation()
     func hideLoadingAnimation()
 }
 
@@ -167,6 +168,10 @@ extension MovieListViewController: MovieListView {
     
     func hideLoadingAnimation() {
         loadingAnimationView.hide()
+    }
+    
+    func continueLoadingAnimation() {
+        loadingAnimationView.continueWithLoop()
     }
 }
 

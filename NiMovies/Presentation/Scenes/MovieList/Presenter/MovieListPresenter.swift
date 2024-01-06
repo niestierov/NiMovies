@@ -57,8 +57,23 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     // MARK: - Internal -
     
     func initialLoad() {
-        self.fetchMoviesGenreList() {
-            self.fetchMovieList(isInitial: false)
+        let initialLoadGroup = DispatchGroup()
+        
+        initialLoadGroup.enter()
+        view.showLoadingAnimation {
+            initialLoadGroup.leave()
+        }
+        
+        initialLoadGroup.enter()
+        DispatchQueue.global(qos: .userInitiated).async {
+            self.fetchMoviesGenreList() { [weak self] in
+                self?.fetchMovieList(isInitial: false)
+                initialLoadGroup.leave()
+            }
+        }
+        
+        initialLoadGroup.notify(queue: .main) {
+            self.view.hideLoadingAnimation()
         }
     }
 

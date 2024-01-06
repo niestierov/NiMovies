@@ -13,6 +13,7 @@ protocol LoadingAnimationView: AnyObject {
         on parentViewController: UIViewController,
         completion: EmptyBlock?
     )
+    func continueWithLoop()
     func hide()
 }
 
@@ -23,7 +24,6 @@ final class LoadingAnimationViewController: UIViewController {
     private lazy var loadingAnimationView: LottieAnimationView = {
         let animationView = LottieAnimationView(name: AppConstant.initialLoadingAnimationName)
         animationView.contentMode = .scaleAspectFit
-        animationView.loopMode = .playOnce
         animationView.translatesAutoresizingMaskIntoConstraints = false
         return animationView
     }()
@@ -66,17 +66,24 @@ extension LoadingAnimationViewController: LoadingAnimationView {
         parentViewController.addChild(self)
         parentViewController.view.addSubview(view)
 
+        loadingAnimationView.loopMode = .playOnce
         loadingAnimationView.play() { completed in
             completion?()
         }
     }
     
+    func continueWithLoop() {
+        loadingAnimationView.loopMode = .loop
+        loadingAnimationView.play()
+    }
+    
     func hide() {
         loadingAnimationView.stop()
         
+        self.navigationController?.setNavigationBarHidden(false, animated: false)
+        
         UIView.animate(withDuration: 0.5) {
-            self.view.transform = CGAffineTransform(translationX: 0, y: -self.view.frame.height)
-            self.navigationController?.setNavigationBarHidden(false, animated: true)
+            self.view.alpha = 0
         } completion: { _ in
             self.view.removeFromSuperview()
         }
