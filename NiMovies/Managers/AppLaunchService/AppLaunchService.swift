@@ -24,6 +24,9 @@ final class AppLaunchService {
     
     func start(in windowScene: UIWindowScene) {
         appConfiguration.configure()
+        
+        let movieListModule = DefaultMovieListAssembly().createMovieList()
+        configureWindow(with: movieListModule, in: windowScene)
     }
 
     // MARK: - Private -
