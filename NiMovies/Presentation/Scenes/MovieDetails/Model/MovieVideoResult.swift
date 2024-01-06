@@ -15,7 +15,4 @@ struct MovieVideo: Codable {
     let name: String?
     let key: String?
     let site: String
-    let size: Int
-    let type: String
-    let official: String
 }

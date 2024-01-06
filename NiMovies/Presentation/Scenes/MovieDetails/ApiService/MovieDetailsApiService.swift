@@ -7,6 +7,18 @@
 
 import Foundation
 
+private enum MovieDetailsError: Error, LocalizedError {
+    case videoDataIsEmpty
+    case videoKeyIsMissing
+    
+    var errorDescription: String? {
+        switch self {
+        case .videoDataIsEmpty, .videoKeyIsMissing:
+            AppConstant.defaultErrorMessage + "An error occurred while playing this trailer."
+        }
+    }
+}
+
 protocol MovieDetailsApiService {
     func fetchMovieDetails(
         movieId: Int,
@@ -14,11 +26,15 @@ protocol MovieDetailsApiService {
     )
     func fetchMovieVideos(
         movieId: Int,
-        completion: @escaping (Result<String, Error>) -> Void
+        completion: @escaping (Result<URL, Error>) -> Void
     )
 }
 
 final class DefaultMovieDetailsApiService: MovieDetailsApiService {
+    private struct Constant {
+        static let youtubeBaseUrlWithoutKey = "https://www.youtube.com/watch?v="
+        static let youtubeTitle = "YouTube"
+    }
     
     // MARK: - Properties -
     
@@ -60,7 +76,7 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
     
     func fetchMovieVideos(
         movieId: Int,
-        completion: @escaping (Result<String, Error>) -> Void
+        completion: @escaping (Result<URL, Error>) -> Void
     ) {
         let endpointPath = MovieDetailsEndpoint.videos(movieId: movieId)
         let endpoint = Endpoint<MovieVideoResult>(
@@ -69,17 +85,20 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
             method: .get
         )
         
-        networkService.request(endpoint: endpoint) { response in
+        networkService.request(endpoint: endpoint) { [weak self] response in
+            guard let self else { return }
+            
             switch response {
             case .success(let result):
                 guard let result else {
+                    completion(.failure(MovieDetailsError.videoDataIsEmpty))
                     return
                 }
-                let videos = result.results.compactMap {
-                    $0.key
+                guard let url = self.makeYouTubeUrl(with: result.results) else {
+                    completion(.failure(MovieDetailsError.videoKeyIsMissing))
+                    return
                 }
-                
-                completion(.success(videos.first ?? ""))
+                completion(.success(url))
                 
             case .failure(let error):
                 completion(.failure(error))
@@ -88,7 +107,7 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
     }
 }
 
-extension DefaultMovieDetailsApiService {
+private extension DefaultMovieDetailsApiService {
     enum MovieDetailsEndpoint {
         case details(movieId: Int)
         case videos(movieId: Int)
@@ -123,5 +142,19 @@ extension DefaultMovieDetailsApiService {
             }
             return url
         }
+    }
+    
+    func makeYouTubeUrl(with movieVideo: [MovieVideo]) -> URL? {
+        for result in movieVideo {
+            if result.site == Constant.youtubeTitle {
+                guard let key = result.key else {
+                    return nil
+                }
+                if let url = URL(string: Constant.youtubeBaseUrlWithoutKey + key) {
+                    return url
+                }
+            }
+        }
+        return nil
     }
 }

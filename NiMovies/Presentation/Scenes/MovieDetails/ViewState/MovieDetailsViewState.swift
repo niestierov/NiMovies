@@ -8,6 +8,10 @@
 import Foundation
 
 struct MovieDetailsViewState {
+    private struct Constant {
+        
+    }
+    
     struct Movie {
         let title: String
         let backdropUrlString: String
@@ -27,20 +31,35 @@ extension MovieDetailsViewState {
         let moviesViewState = makeMovie(movie)
         return MovieDetailsViewState(movie: moviesViewState)
     }
-    
+
     static func makeMovie(_ movie: MovieDetailsResult) -> MovieDetailsViewState.Movie {
-        let genres = movie.genres.map { genre in
-            return genre.name
-        }.joined(separator: ", ")
-        let releaseDate = movie.releaseDate ?? "Release unknown"
-        let country = movie.productionCountries.first?.name ?? "Production unknown"
-        let voteAverage = movie.voteAverage.stringValue
-        let overview = movie.overview ?? "It Looks like there is no description."
         let backdropUrlString = MovieConfiguration.basePosterUrl + (movie.backdropPath ?? "")
         let posterUrlString = MovieConfiguration.basePosterUrl + (movie.posterPath ?? "")
+        let voteAverage = (movie.voteAverage ?? 0).stringValue
+        let title = setDefaultValueIfNeeded(
+            for: movie.title,
+            with: "Title unknown."
+        )
+        let unpackedGenres = movie.genres?.compactMap { $0.name }.joined(separator: ", ")
+        let genres = setDefaultValueIfNeeded(
+            for: unpackedGenres,
+            with: "Genres unknown."
+        )
+        let releaseDate = setDefaultValueIfNeeded(
+            for: movie.releaseDate,
+            with: "Release unknown."
+        )
+        let country = setDefaultValueIfNeeded(
+            for: movie.productionCountries?.first?.name,
+            with: "Production unknown."
+        )
+        let overview = setDefaultValueIfNeeded(
+            for: movie.overview,
+            with: "It looks like there is no description."
+        )
         
         return MovieDetailsViewState.Movie(
-            title: movie.title,
+            title: title,
             backdropUrlString: backdropUrlString, 
             posterUrlString: posterUrlString,
             genres: genres,
@@ -49,5 +68,13 @@ extension MovieDetailsViewState {
             country: country,
             releaseDate: releaseDate
         )
+    }
+    
+    private static func setDefaultValueIfNeeded<T>(for value: T?, with defaultValue: String) -> String {
+        guard let value = value else {
+            return defaultValue
+        }
+        let stringValue = String(describing: value)
+        return stringValue.isEmpty ? defaultValue : stringValue
     }
 }

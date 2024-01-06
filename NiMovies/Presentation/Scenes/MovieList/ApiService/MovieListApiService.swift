@@ -117,9 +117,7 @@ private extension DefaultMovieListApiService {
             }
         }
     }
-}
-
-extension DefaultMovieListApiService {
+    
     enum MovieEndpoint {
         case list(sortType: MovieListSortType, page: Int)
         case search(query: String, page: Int)
@@ -128,11 +126,11 @@ extension DefaultMovieListApiService {
         private var path: String {
             switch self {
             case .list:
-                return "/discover/movie"
+                "/discover/movie"
             case .search:
-                return "/search/movie"
+                "/search/movie"
             case .genres:
-                return "/genre/movie/list"
+                "/genre/movie/list"
             }
         }
         

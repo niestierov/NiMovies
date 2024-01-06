@@ -51,7 +51,6 @@ final class MovieDetailsViewController: UIViewController, Alert {
     private lazy var trailerPrefixLabel: UILabel = {
         let label = UILabel()
         label.text = "Watch latest trailer:"
-        label.backgroundColor = .red
         label.font = .systemFont(ofSize: 21, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -68,6 +67,7 @@ final class MovieDetailsViewController: UIViewController, Alert {
         button.contentHorizontalAlignment = .fill
         button.backgroundColor = .red
         button.clipsToBounds = true
+        button.addTarget(self, action: #selector(didTapTrailerButton), for: .touchUpInside)
         button.imageView?.applyShadow(color: UIColor.black.cgColor, opacity: 0.5, radius: 4)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -144,10 +144,10 @@ private extension MovieDetailsViewController {
         scrollView.addSubview(movieImageView)
         scrollView.addSubview(mainStackView)
         
+        mainStackView.addArrangedSubview(trailerStackView)
         mainStackView.addArrangedSubview(titleStackView)
         mainStackView.addArrangedSubview(genresStackView)
         mainStackView.addArrangedSubview(releaseDateStackView)
-        mainStackView.addArrangedSubview(trailerStackView)
         mainStackView.addArrangedSubview(descriptionStackView)
         mainStackView.addArrangedSubview(ratingStackView)
         mainStackView.addArrangedSubview(productionStackView)
@@ -194,14 +194,16 @@ private extension MovieDetailsViewController {
             trailerButton.heightAnchor.constraint(equalTo: trailerButton.widthAnchor),
         ])
     }
+    
+    @objc
+    func didTapTrailerButton() {
+        presenter.didTapTrailerButton()
+    }
 }
 
 extension MovieDetailsViewController: MovieDetailsView {
     func showError(message: String?) {
-        showAlert(
-            title: AlertConstant.defaultAlertErrorTitle,
-            message: message ?? AlertConstant.defaultAlertErrorMessage
-        )
+        showAlert(message: message ?? AppConstant.defaultErrorMessage)
     }
     
     func update(with movie: MovieDetailsViewState.Movie) {

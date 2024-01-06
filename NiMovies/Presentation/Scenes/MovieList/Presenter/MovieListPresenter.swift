@@ -204,7 +204,9 @@ private extension DefaultMovieListPresenter {
     
     func fetchMoviesGenreList(completion: EmptyBlock? = nil) {
         apiService.fetchMoviesGenreList { [weak self] result in
-            guard let self else { return }
+            guard let self else {
+                return
+            }
 
             switch result {
             case .success(let genreList):

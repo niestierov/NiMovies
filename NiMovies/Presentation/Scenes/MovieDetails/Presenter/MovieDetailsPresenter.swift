@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 protocol MovieDetailsPresenter {
     func initialLoad()
@@ -40,7 +41,7 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     }
     
     func didTapTrailerButton() {
-        fetchMovieVideos { key in
+        fetchMovieVideos { url in
             
         }
     }
@@ -65,15 +66,15 @@ private extension DefaultMovieDetailsPresenter {
         }
     }
     
-    func fetchMovieVideos(completion: @escaping (String) -> Void) {
+    func fetchMovieVideos(completion: @escaping (URL) -> Void) {
         apiService.fetchMovieVideos(movieId: movieId) { [weak self] result in
             guard let self else {
                 return
             }
             
             switch result {
-            case .success(let videoKey):
-                completion(videoKey)
+            case .success(let url):
+                completion(url)
             case.failure(let error):
                 view.showError(message: error.localizedDescription)
             }
