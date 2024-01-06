@@ -193,9 +193,9 @@ private extension DefaultMovieListPresenter {
     
     func showToTopButtonIfNeeded(for index: Int) {
         if index == Constant.scrollToTopButtonScope {
-            view.showScrollToTopButton(true)
+            view.showScrollToTop(true)
         } else if index < Constant.scrollToTopButtonScope {
-            view.showScrollToTopButton(false)
+            view.showScrollToTop(false)
         }
     }
 }

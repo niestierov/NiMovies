@@ -16,6 +16,7 @@ final class DefaultMovieListAssembly: MovieListAssembly {
         let networkService: NetworkService = ServiceLocator.shared.resolve()
         let apiService: MovieListApiService = DefaultMovieListApiService(networkService: networkService)
         
+        let loadingAnimationView: LoadingAnimationView = LoadingAnimationViewController()
         let viewController = MovieListViewController()
         let router: MovieListRouter = DefaultMovieListRouter(root: viewController)
         let presenter = DefaultMovieListPresenter(
@@ -24,7 +25,10 @@ final class DefaultMovieListAssembly: MovieListAssembly {
             apiService: apiService
         )
         
-        viewController.inject(presenter: presenter)
+        viewController.inject(
+            presenter: presenter,
+            loadingAnimationView: loadingAnimationView
+        )
         
         return UINavigationController(rootViewController: viewController)
     }

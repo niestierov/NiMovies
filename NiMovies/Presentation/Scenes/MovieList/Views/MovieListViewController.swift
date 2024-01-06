@@ -12,7 +12,7 @@ protocol MovieListView: AnyObject {
     func initialUpdate()
     func showError(message: String?)
     func showScrollToTop(_ isVisible: Bool)
-    func showLoadingAnimation(completion: EmptyBlock? = nil)
+    func showLoadingAnimation(completion: EmptyBlock?)
     func hideLoadingAnimation()
 }
 
@@ -30,6 +30,8 @@ final class MovieListViewController: UIViewController, Alert {
     private var presenter: MovieListPresenter!
     
     // MARK: - UI Components -
+    
+    private var loadingAnimationView: LoadingAnimationView!
     
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController()
@@ -124,8 +126,12 @@ final class MovieListViewController: UIViewController, Alert {
     
     // MARK: - Internal -
     
-    func inject(presenter: MovieListPresenter) {
+    func inject(
+        presenter: MovieListPresenter,
+        loadingAnimationView: LoadingAnimationView
+    ) {
         self.presenter = presenter
+        self.loadingAnimationView = loadingAnimationView
     }
 }
 
