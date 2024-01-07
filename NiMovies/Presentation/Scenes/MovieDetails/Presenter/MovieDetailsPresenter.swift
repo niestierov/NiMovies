@@ -11,6 +11,7 @@ import UIKit
 protocol MovieDetailsPresenter {
     func initialLoad()
     func didTapTrailerButton()
+    func getPosterUrl() -> String?
 }
 
 final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
@@ -44,6 +45,13 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
         fetchMovieVideos { url in
             
         }
+    }
+    
+    func getPosterUrl() -> String? {
+        guard let posterUrl = movieDetailsViewState.movie?.posterUrlString else {
+            return nil
+        }
+        return posterUrl
     }
 }
 
