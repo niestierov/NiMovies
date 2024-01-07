@@ -16,6 +16,8 @@ protocol MovieListView: AnyObject {
     func continueLoadingAnimation()
     func hideLoadingAnimation()
     func showNoInternetConnectionError()
+    func updateRequestStartedState()
+    func updateRequestEndedState()
 }
 
 final class MovieListViewController: UIViewController, Alert {
@@ -184,6 +186,14 @@ extension MovieListViewController: MovieListView {
             message: AppConstant.noInternetConnectionMessage,
             actions: [openAppSettingAction]
         )
+    }
+    
+    func updateRequestStartedState() {
+        collectionView.showActivityIndicator()
+    }
+    
+    func updateRequestEndedState() {
+        collectionView.hideActivityIndicator()
     }
 }
 

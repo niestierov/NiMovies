@@ -145,6 +145,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
 private extension DefaultMovieListPresenter {
     func fetchMovieList(isInitial: Bool) {
         isRequestLoading = true
+        view.updateRequestStartedState()
         
         if isInitial {
             movieListViewState.movies = []
@@ -160,6 +161,7 @@ private extension DefaultMovieListPresenter {
                 return
             }
             isRequestLoading = false
+            view.updateRequestEndedState()
             
             switch response {
             case .success(let movieList):
@@ -176,6 +178,7 @@ private extension DefaultMovieListPresenter {
         isInitialSearch: Bool
     ) {
         isRequestLoading = true
+        view.updateRequestStartedState()
         
         if isInitialSearch {
             movieListViewState.movies = []
@@ -191,6 +194,7 @@ private extension DefaultMovieListPresenter {
                 return
             }
             isRequestLoading = false
+            view.updateRequestEndedState()
             
             switch response {
             case .success(let movieList):
@@ -203,11 +207,15 @@ private extension DefaultMovieListPresenter {
     }
     
     func fetchMoviesGenreList(completion: EmptyBlock? = nil) {
+        view.updateRequestStartedState()
+        
         apiService.fetchMoviesGenreList { [weak self] result in
             guard let self else {
                 return
             }
 
+            view.updateRequestEndedState()
+            
             switch result {
             case .success(let genreList):
                 moviesGenreList = genreList

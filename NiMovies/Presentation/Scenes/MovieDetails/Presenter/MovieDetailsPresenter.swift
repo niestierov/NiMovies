@@ -42,9 +42,7 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     }
     
     func didTapTrailerButton() {
-        fetchMovieVideos { [weak self] keys in
-            self?.view.update(with: keys)
-        }
+        fetchMovieVideos()
     }
     
     func getPosterUrl() -> String? {
@@ -74,15 +72,15 @@ private extension DefaultMovieDetailsPresenter {
         }
     }
     
-    func fetchMovieVideos(completion: @escaping ([String]) -> Void) {
+    func fetchMovieVideos() {
         apiService.fetchMovieVideos(movieId: movieId) { [weak self] result in
             guard let self else {
                 return
             }
             
             switch result {
-            case .success(let key):
-                completion(key)
+            case .success(let keys):
+                view.showYouTubePlayer(with: keys)
             case.failure(let error):
                 view.showError(message: error.localizedDescription)
             }

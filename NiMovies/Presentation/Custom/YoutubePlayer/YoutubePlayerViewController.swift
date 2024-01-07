@@ -1,5 +1,5 @@
 //
-//  YoutubePlayerViewController.swift
+//  YouTubePlayerViewController.swift
 //  NiMovies
 //
 //  Created by Denys Niestierov on 07.01.2024.
@@ -7,14 +7,14 @@
 
 import YouTubeiOSPlayerHelper
 
-protocol YoutubePlayerView {
+protocol YouTubePlayerView {
     func showAndPlayVideo(
         with keys: [String],
         on parent: UIViewController
     )
 }
 
-final class YoutubePlayerViewController: UIViewController {
+final class YouTubePlayerViewController: UIViewController {
     
     // MARK: - Properties -
     
@@ -40,23 +40,24 @@ final class YoutubePlayerViewController: UIViewController {
     }
 }
 
-// MARK: - YoutubePlayerView -
+// MARK: - YouTubePlayerView -
 
-extension YoutubePlayerViewController: YoutubePlayerView {
+extension YouTubePlayerViewController: YouTubePlayerView {
     func showAndPlayVideo(
         with keys: [String],
         on parent: UIViewController
     ) {
         videoKeys = keys
-        
         present(on: parent)
+        
+        view.showActivityIndicator(color: .white)
         loadNextVideo()
     }
 }
 
 // MARK: - Private -
 
-private extension YoutubePlayerViewController {
+private extension YouTubePlayerViewController {
     func setupView() {
         let swipeGesture = UISwipeGestureRecognizer(
             target: self,
@@ -103,7 +104,7 @@ private extension YoutubePlayerViewController {
     }
 }
 
-extension YoutubePlayerViewController: YTPlayerViewDelegate {
+extension YouTubePlayerViewController: YTPlayerViewDelegate {
     func playerView(
         _ playerView: YTPlayerView, 
         didChangeTo state: YTPlayerState
@@ -112,6 +113,10 @@ extension YoutubePlayerViewController: YTPlayerViewDelegate {
             self.videoKeys?.removeFirst()
             loadNextVideo()
         }
+    }
+    
+    func playerViewDidBecomeReady(_ playerView: YTPlayerView) {
+        view.hideActivityIndicator()
     }
     
     func playerViewPreferredWebViewBackgroundColor(_ playerView: YTPlayerView) -> UIColor {

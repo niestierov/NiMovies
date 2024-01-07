@@ -32,7 +32,7 @@ protocol MovieDetailsApiService {
 
 final class DefaultMovieDetailsApiService: MovieDetailsApiService {
     private struct Constant {
-        static let youtubeTitle = "YouTube"
+        static let youTubeTitle = "YouTube"
         static let suitableVideoTypes = ["Trailer", "Teaser"]
     }
     
@@ -147,7 +147,7 @@ private extension DefaultMovieDetailsApiService {
     func getVideoKeys(by movieVideo: [MovieVideo]) -> [String]? {
         let keys = movieVideo.compactMap { result -> String? in
             guard Constant.suitableVideoTypes.contains(result.type),
-                  result.site == Constant.youtubeTitle,
+                  result.site == Constant.youTubeTitle,
                   let key = result.key
             else {
                 return nil

@@ -19,7 +19,7 @@ final class DefaultMovieDetailsAssembly: MovieDetailsAssembly {
         let networkService: NetworkService = ServiceLocator.shared.resolve()
         let apiService: MovieDetailsApiService = DefaultMovieDetailsApiService(networkService: networkService)
         let imageScreenView: ImageScreenView = ImageScreenViewController()
-        let youtubePlayerView: YoutubePlayerView = YoutubePlayerViewController()
+        let youTubePlayerView: YouTubePlayerView = YouTubePlayerViewController()
         
         let viewController = MovieDetailsViewController()
         let presenter = DefaultMovieDetailsPresenter(
@@ -31,7 +31,7 @@ final class DefaultMovieDetailsAssembly: MovieDetailsAssembly {
         viewController.inject(
             presenter: presenter,
             imageScreenView: imageScreenView,
-            youtubePlayerView: youtubePlayerView
+            youTubePlayerView: youTubePlayerView
         )
         
         return viewController
