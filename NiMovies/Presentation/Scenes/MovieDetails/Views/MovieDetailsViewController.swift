@@ -21,6 +21,7 @@ final class MovieDetailsViewController: UIViewController, Alert {
     // MARK: - Properties -
     
     private var presenter: MovieDetailsPresenter!
+    private var imageScreenView: ImageScreenView!
     
     // MARK: - UI Components -
     
@@ -107,6 +108,12 @@ final class MovieDetailsViewController: UIViewController, Alert {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.applyShadow(radius: 8)
+        imageView.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(
+            target: self,
+            action: #selector(didTapImageView)
+        )
+        imageView.addGestureRecognizer(tapGesture)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -128,8 +135,12 @@ final class MovieDetailsViewController: UIViewController, Alert {
     
     // MARK: - Internal -
     
-    func setPresenter(_ presenter: MovieDetailsPresenter) {
+    func inject(
+        presenter: MovieDetailsPresenter,
+        imageScreenView: ImageScreenView
+    ) {
         self.presenter = presenter
+        self.imageScreenView = imageScreenView
     }
 }
 
@@ -193,6 +204,14 @@ private extension MovieDetailsViewController {
             ),
             trailerButton.heightAnchor.constraint(equalTo: trailerButton.widthAnchor),
         ])
+    }
+    
+    @objc
+    func didTapImageView() {
+        guard let posterUrl = presenter.getPosterUrl() else {
+            return
+        }
+        imageScreenView.show(with: posterUrl, on: self)
     }
     
     @objc

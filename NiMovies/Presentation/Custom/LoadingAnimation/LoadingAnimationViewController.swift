@@ -1,5 +1,5 @@
 //
-//  LoadingAnimation.swift
+//  LoadingAnimationViewController.swift
 //  NiMovies
 //
 //  Created by Denys Niestierov on 05.01.2024.
@@ -60,11 +60,11 @@ private extension LoadingAnimationViewController {
 
 extension LoadingAnimationViewController: LoadingAnimationView {
     func start(
-        on parentViewController: UIViewController,
+        on parent: UIViewController,
         completion: EmptyBlock? = nil
     ) {
-        parentViewController.addChild(self)
-        parentViewController.view.addSubview(view)
+        parent.addChild(self)
+        parent.view.addSubview(view)
 
         loadingAnimationView.loopMode = .playOnce
         loadingAnimationView.play() { completed in

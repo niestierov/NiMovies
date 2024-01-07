@@ -18,6 +18,7 @@ final class DefaultMovieDetailsAssembly: MovieDetailsAssembly {
     func createMovieDetails(movieId: Int) -> MovieDetailsViewController {
         let networkService: NetworkService = ServiceLocator.shared.resolve()
         let apiService: MovieDetailsApiService = DefaultMovieDetailsApiService(networkService: networkService)
+        let imageScreenView: ImageScreenView = ImageScreenViewController()
         
         let viewController = MovieDetailsViewController()
         let presenter = DefaultMovieDetailsPresenter(
@@ -26,7 +27,10 @@ final class DefaultMovieDetailsAssembly: MovieDetailsAssembly {
             movieId: movieId
         )
         
-        viewController.setPresenter(presenter)
+        viewController.inject(
+            presenter: presenter,
+            imageScreenView: imageScreenView
+        )
         
         return viewController
     }
