@@ -26,14 +26,14 @@ protocol MovieDetailsApiService {
     )
     func fetchMovieVideos(
         movieId: Int,
-        completion: @escaping (Result<URL, Error>) -> Void
+        completion: @escaping (Result<[String], Error>) -> Void
     )
 }
 
 final class DefaultMovieDetailsApiService: MovieDetailsApiService {
     private struct Constant {
-        static let youtubeBaseUrlWithoutKey = "https://www.youtube.com/watch?v="
         static let youtubeTitle = "YouTube"
+        static let suitableVideoTypes = ["Trailer", "Teaser"]
     }
     
     // MARK: - Properties -
@@ -76,7 +76,7 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
     
     func fetchMovieVideos(
         movieId: Int,
-        completion: @escaping (Result<URL, Error>) -> Void
+        completion: @escaping (Result<[String], Error>) -> Void
     ) {
         let endpointPath = MovieDetailsEndpoint.videos(movieId: movieId)
         let endpoint = Endpoint<MovieVideoResult>(
@@ -94,11 +94,11 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
                     completion(.failure(MovieDetailsError.videoDataIsEmpty))
                     return
                 }
-                guard let url = self.makeYouTubeUrl(with: result.results) else {
+                guard var keys = self.getVideoKeys(by: result.results) else {
                     completion(.failure(MovieDetailsError.videoKeyIsMissing))
                     return
                 }
-                completion(.success(url))
+                completion(.success(keys))
                 
             case .failure(let error):
                 completion(.failure(error))
@@ -144,17 +144,16 @@ private extension DefaultMovieDetailsApiService {
         }
     }
     
-    func makeYouTubeUrl(with movieVideo: [MovieVideo]) -> URL? {
-        for result in movieVideo {
-            if result.site == Constant.youtubeTitle {
-                guard let key = result.key else {
-                    return nil
-                }
-                if let url = URL(string: Constant.youtubeBaseUrlWithoutKey + key) {
-                    return url
-                }
+    func getVideoKeys(by movieVideo: [MovieVideo]) -> [String]? {
+        let keys = movieVideo.compactMap { result -> String? in
+            guard Constant.suitableVideoTypes.contains(result.type),
+                  result.site == Constant.youtubeTitle,
+                  let key = result.key
+            else {
+                return nil
             }
+            return key
         }
-        return nil
+        return keys
     }
 }

@@ -10,6 +10,7 @@ import UIKit
 protocol MovieDetailsView: AnyObject {
     func showError(message: String?)
     func update(with movie: MovieDetailsViewState.Movie)
+    func update(with keys: [String])
 }
 
 final class MovieDetailsViewController: UIViewController, Alert {
@@ -22,6 +23,7 @@ final class MovieDetailsViewController: UIViewController, Alert {
     
     private var presenter: MovieDetailsPresenter!
     private var imageScreenView: ImageScreenView!
+    private var youtubePlayerView: YoutubePlayerView!
     
     // MARK: - UI Components -
     
@@ -137,10 +139,12 @@ final class MovieDetailsViewController: UIViewController, Alert {
     
     func inject(
         presenter: MovieDetailsPresenter,
-        imageScreenView: ImageScreenView
+        imageScreenView: ImageScreenView,
+        youtubePlayerView: YoutubePlayerView
     ) {
         self.presenter = presenter
         self.imageScreenView = imageScreenView
+        self.youtubePlayerView = youtubePlayerView
     }
 }
 
@@ -237,5 +241,9 @@ extension MovieDetailsViewController: MovieDetailsView {
         descriptionStackView.contentText = movie.overview
         ratingStackView.contentText = movie.voteAverage
         productionStackView.contentText = movie.country
+    }
+    
+    func update(with keys: [String]) {
+        youtubePlayerView.showAndPlayVideo(with: keys, on: self)
     }
 }
