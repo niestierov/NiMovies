@@ -11,16 +11,14 @@ protocol MovieListApiService {
     func fetchMovieList(
         by sort: MovieListSortType,
         for page: Int,
-        completion: @escaping (Result<[MovieResult], Error>) -> Void
+        completion: @escaping EndpointRequestCompletion<MovieListResult>
     )
     func fetchSearch(
         with query: String,
         for page: Int,
-        completion: @escaping (Result<[MovieResult], Error>) -> Void
+        completion: @escaping EndpointRequestCompletion<MovieListResult>
     )
-    func fetchMoviesGenreList(
-        completion: @escaping (Result<[MovieGenre], Error>) -> Void
-    )
+    func fetchMoviesGenreList(completion: @escaping EndpointRequestCompletion<MoviesGenreList>)
 }
 
 final class DefaultMovieListApiService: MovieListApiService {
@@ -40,70 +38,39 @@ final class DefaultMovieListApiService: MovieListApiService {
     func fetchMovieList(
         by sort: MovieListSortType,
         for page: Int,
-        completion: @escaping (Result<[MovieResult], Error>) -> Void
+        completion: @escaping EndpointRequestCompletion<MovieListResult>
     ) {
         let endpointPath = MovieListEndpoint.list(sortType: sort, page: page)
-        fetchMovieList(with: endpointPath, completion: completion)
+        let endpoint = Endpoint<MovieListResult>(
+            url: endpointPath.url,
+            parameters: endpointPath.parameters,
+            method: .get
+        )
+        networkService.request(endpoint: endpoint, completion: completion)
     }
 
     func fetchSearch(
         with query: String,
         for page: Int,
-        completion: @escaping (Result<[MovieResult], Error>) -> Void
+        completion: @escaping EndpointRequestCompletion<MovieListResult>
     ) {
         let endpointPath = MovieListEndpoint.search(query: query, page: page)
-        fetchMovieList(with: endpointPath, completion: completion)
+        let endpoint = Endpoint<MovieListResult>(
+            url: endpointPath.url,
+            parameters: endpointPath.parameters,
+            method: .get
+        )
+        networkService.request(endpoint: endpoint, completion: completion)
     }
     
-    func fetchMoviesGenreList(
-        completion: @escaping (Result<[MovieGenre], Error>) -> Void
-    ) {
+    func fetchMoviesGenreList(completion: @escaping EndpointRequestCompletion<MoviesGenreList>) {
         let endpointPath = MovieListEndpoint.genres
         let endpoint = Endpoint<MoviesGenreList>(
             url: endpointPath.url,
             parameters: endpointPath.parameters,
             method: .get
         )
-        
-        networkService.request(endpoint: endpoint) { response in
-            switch response {
-            case .success(let result):
-                guard let result,
-                      !result.genres.isEmpty else {
-                    return
-                }
-                completion(.success(result.genres))
-                
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
-    }
-}
-
-// MARK: - Private -
-
-private extension DefaultMovieListApiService {
-    func fetchMovieList(
-        with endpointPath: MovieListEndpoint,
-        completion: @escaping (Result<[MovieResult], Error>) -> Void
-    ) {
-        let endpoint = Endpoint<MovieListResult>(
-            url: endpointPath.url,
-            parameters: endpointPath.parameters,
-            method: .get
-        )
-        networkService.request(endpoint: endpoint) { response in
-            switch response {
-            case .success(let result):
-                guard let result else {
-                    return
-                }
-                completion(.success(result.results))
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
+        networkService.request(endpoint: endpoint, completion: completion)
     }
 }
 
