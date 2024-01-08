@@ -7,34 +7,18 @@
 
 import Foundation
 
-fileprivate enum MovieDetailsError: Error, LocalizedError {
-    case videoDataIsEmpty
-    case videoKeyIsMissing
-    
-    var errorDescription: String? {
-        switch self {
-        case .videoDataIsEmpty, .videoKeyIsMissing:
-            AppConstant.defaultErrorMessage + "An error occurred while playing this trailer."
-        }
-    }
-}
-
 protocol MovieDetailsApiService {
     func fetchMovieDetails(
         movieId: Int,
-        completion: @escaping (Result<MovieDetailsResult, Error>) -> Void
+        completion: @escaping EndpointRequestCompletion<MovieDetailsResult>
     )
     func fetchMovieVideos(
         movieId: Int,
-        completion: @escaping (Result<[String], Error>) -> Void
+        completion: @escaping EndpointRequestCompletion<MovieVideoResult>
     )
 }
 
 final class DefaultMovieDetailsApiService: MovieDetailsApiService {
-    private struct Constant {
-        static let youTubeTitle = "YouTube"
-        static let suitableVideoTypes = ["Trailer", "Teaser"]
-    }
     
     // MARK: - Properties -
     
@@ -50,7 +34,7 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
     
     func fetchMovieDetails(
         movieId: Int,
-        completion: @escaping (Result<MovieDetailsResult, Error>) -> Void
+        completion: @escaping EndpointRequestCompletion<MovieDetailsResult>
     ) {
         let endpointPath = MovieDetailsEndpoint.details(movieId: movieId)
         let endpoint = Endpoint<MovieDetailsResult>(
@@ -58,24 +42,12 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
             parameters: endpointPath.parameters,
             method: .get
         )
-        
-        networkService.request(endpoint: endpoint) { response in
-            switch response {
-            case .success(let result):
-                guard let result else {
-                    return
-                }
-                completion(.success(result))
-                
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
+        networkService.request(endpoint: endpoint, completion: completion)
     }
     
     func fetchMovieVideos(
         movieId: Int,
-        completion: @escaping (Result<[String], Error>) -> Void
+        completion: @escaping EndpointRequestCompletion<MovieVideoResult>
     ) {
         let endpointPath = MovieDetailsEndpoint.videos(movieId: movieId)
         let endpoint = Endpoint<MovieVideoResult>(
@@ -83,31 +55,14 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
             parameters: endpointPath.parameters,
             method: .get
         )
-        
-        networkService.request(endpoint: endpoint) { [weak self] response in
-            guard let self else { return }
-            
-            switch response {
-            case .success(let result):
-                guard let result else {
-                    completion(.failure(MovieDetailsError.videoDataIsEmpty))
-                    return
-                }
-                guard let keys = self.getVideoKeys(by: result.results) else {
-                    completion(.failure(MovieDetailsError.videoKeyIsMissing))
-                    return
-                }
-                completion(.success(keys))
-                
-            case .failure(let error):
-                completion(.failure(error))
-            }
-        }
+        networkService.request(endpoint: endpoint, completion: completion)
     }
 }
 
-private extension DefaultMovieDetailsApiService {
-    enum MovieDetailsEndpoint {
+// MARK: - MovieDetailsEndpoint -
+
+extension DefaultMovieDetailsApiService {
+    fileprivate enum MovieDetailsEndpoint {
         case details(movieId: Int)
         case videos(movieId: Int)
         
@@ -141,18 +96,5 @@ private extension DefaultMovieDetailsApiService {
             }
             return url
         }
-    }
-    
-    func getVideoKeys(by movieVideo: [MovieVideo]) -> [String]? {
-        let keys = movieVideo.compactMap { result -> String? in
-            guard Constant.suitableVideoTypes.contains(result.type),
-                  result.site == Constant.youTubeTitle,
-                  let key = result.key
-            else {
-                return nil
-            }
-            return key
-        }
-        return keys
     }
 }

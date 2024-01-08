@@ -42,7 +42,6 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     }
     private var isRequestLoading = false
     private var latestSearchQuery: String?
-    private var latestMovieListResult: [MovieResult] = []
     private var isConnectedToInternet: Bool {
         NetworkReachabilityService.isConnectedToInternet
     }
@@ -72,20 +71,35 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         }
         
         initialLoadGroup.enter()
-
+        //var movieListResultError: Error?
         if isConnectedToInternet {
+            var movieListResult: [MovieResult]?
+
             let requestsGroup = DispatchGroup()
             
-            DispatchQueue.global(qos: .userInitiated).async(group: requestsGroup) {
-                self.fetchMoviesGenreList()
+            //DispatchQueue.global(qos: .userInitiated).async(group: requestsGroup) {
+            requestsGroup.enter()
+            self.fetchMoviesGenreList() { _ in
+                requestsGroup.leave()
             }
             
-            DispatchQueue.global(qos: .userInitiated).async(group: requestsGroup) {
-                self.fetchMovieList(isInitial: false)
+            requestsGroup.enter()
+            self.fetchMovieList(isInitial: false) { result in
+                switch result {
+                case .success(let movieList):
+                    movieListResult = movieList
+                case .failure(let error):
+                    //movieListResultError = error
+                    break
+                }
+                    
+                requestsGroup.leave()
             }
 
             requestsGroup.notify(queue: .global(qos: .userInitiated)) {
-                self.updateMovieListViewState(with: self.latestMovieListResult)
+                if let movieListResult {
+                    self.updateMovieListViewState(with: movieListResult)
+                }
                 initialLoadGroup.leave()
             }
         } else {
@@ -170,7 +184,10 @@ final class DefaultMovieListPresenter: MovieListPresenter {
 }
 
 private extension DefaultMovieListPresenter {
-    func fetchMovieList(isInitial: Bool) {
+    func fetchMovieList(
+        isInitial: Bool,
+        completion: ((Result<[MovieResult],Error>) -> Void)? = nil
+    ) {
         isRequestLoading = true
         
         if isInitial {
@@ -188,10 +205,17 @@ private extension DefaultMovieListPresenter {
             
             switch response {
             case .success(let movieList):
-                latestMovieListResult = movieList
-                updateMovieListViewState(with: movieList)
+                if let completion {
+                    completion(.success(movieList))
+                } else {
+                    updateMovieListViewState(with: movieList)
+                }
             case .failure(let error):
-                view.showError(message: error.localizedDescription)
+                if let completion {
+                    completion(.failure(error))
+                } else {
+                    view.showError(message: error.localizedDescription)
+                }
             }
         }
     }
@@ -242,6 +266,7 @@ private extension DefaultMovieListPresenter {
             switch result {
             case .success(let genreList):
                 moviesGenreList = genreList
+                completion?(.success(genreList))
             case .failure(let error):
                 if let completion {
                     completion(.failure(error))

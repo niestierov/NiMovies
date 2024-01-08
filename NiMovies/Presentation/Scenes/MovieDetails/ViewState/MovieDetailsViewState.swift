@@ -59,6 +59,14 @@ extension MovieDetailsViewState {
             country: country,
             releaseDate: releaseDate
         )
+        
+//        let backdropUrlString = MovieConfiguration.basePosterUrl + (movie.backdropPath ?? "")
+//        let posterUrlString = MovieConfiguration.basePosterUrl + (movie.posterPath ?? "")
+//        let voteAverage = (movie.voteAverage ?? .zero).stringValue
+//        let title
+//        let genres
+//        let country
+//        let overview
     }
     
     private static func setDefaultValueIfNeeded<T>(for value: T?, with defaultValue: String) -> String {
