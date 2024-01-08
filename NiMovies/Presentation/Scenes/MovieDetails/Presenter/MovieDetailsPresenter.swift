@@ -15,6 +15,10 @@ protocol MovieDetailsPresenter {
 }
 
 final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
+    private struct Constant {
+        static let youTubeTitle = "YouTube"
+        static let suitableVideoTypes = ["Trailer", "Teaser"]
+    }
     
     // MARK: - Properties -
     
@@ -39,7 +43,7 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     // MARK: - Internal -
     
     func initialLoad() {
-        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+        DispatchQueue.global().async { [weak self] in
             self?.fetchMovieDetails()
             self?.fetchMovieVideos()
         }
@@ -64,15 +68,15 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
 
 private extension DefaultMovieDetailsPresenter {
     func fetchMovieDetails() {
-        apiService.fetchMovieDetails(movieId: movieId) { [weak self] result in
-            guard let self else {
-                return
-            }
+        apiService.fetchMovieDetails(movieId: movieId) { [weak self] response in
+            guard let self else { return }
             
-            switch result {
-            case .success(let movie):
-                view.update(with: movie)
-                movieDetailsViewState.movie = movie
+            switch response {
+            case .success(let movieDetails):
+                guard let movieDetails else {
+                    return
+                }
+                updateViewState(with: movieDetails)
             case.failure(let error):
                 view.showError(message: error.localizedDescription)
             }
@@ -80,17 +84,42 @@ private extension DefaultMovieDetailsPresenter {
     }
     
     func fetchMovieVideos() {
-        apiService.fetchMovieVideos(movieId: movieId) { [weak self] result in
-            guard let self else {
-                return
-            }
+        apiService.fetchMovieVideos(movieId: movieId) { [weak self] response in
+            guard let self else { return }
             
-            switch result {
-            case .success(let videoKeys):
-                self.videoKeys = videoKeys
-            case.failure(let error):
+            switch response {
+            case .success(let result):
+                guard let result else {
+                    return
+                }
+                guard let keys = self.getVideoKeys(by: result.results) else {
+                    return
+                }
+                self.videoKeys = keys
+                view.updateTrailerButton(isHidden: keys.isEmpty)
+
+            case .failure(let error):
                 view.showError(message: error.localizedDescription)
             }
         }
+    }
+    
+    func updateViewState(with movieResult: MovieDetailsResult) {
+        let movie = MovieDetailsViewState.makeMovie(movieResult)
+        view.update(with: movie)
+        movieDetailsViewState.movie = movie
+    }
+    
+    func getVideoKeys(by movieVideo: [MovieVideo]) -> [String]? {
+        let keys = movieVideo.compactMap { result -> String? in
+            guard Constant.suitableVideoTypes.contains(result.type),
+                  result.site == Constant.youTubeTitle,
+                  let key = result.key
+            else {
+                return nil
+            }
+            return key
+        }
+        return keys
     }
 }

@@ -9,7 +9,7 @@ import Foundation
 import Alamofire
 
 protocol Requestable {
-    associatedtype ResponseType: Decodable
+    associatedtype ResponseType: Codable
     
     var url: URL? { get }
     var parameters: [String: Any] { get }

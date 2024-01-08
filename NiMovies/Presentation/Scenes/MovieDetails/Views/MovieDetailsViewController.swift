@@ -10,6 +10,7 @@ import UIKit
 protocol MovieDetailsView: AnyObject {
     func showError(message: String?)
     func update(with movie: MovieDetailsViewState.Movie)
+    func updateTrailerButton(isHidden: Bool)
 }
 
 final class MovieDetailsViewController: UIViewController, Alert {
@@ -64,6 +65,7 @@ final class MovieDetailsViewController: UIViewController, Alert {
             UIImage(systemName: Constant.trailerButtonImageName),
             for: .normal
         )
+        button.isHidden = true
         button.tintColor = .black
         button.contentVerticalAlignment = .fill
         button.contentHorizontalAlignment = .fill
@@ -77,31 +79,37 @@ final class MovieDetailsViewController: UIViewController, Alert {
     
     private lazy var titleStackView: MovieDetailsStackViewItem = {
         let stackView = MovieDetailsStackViewItem(title: "Title")
+        stackView.contentText = "Title unknown."
         return stackView
     }()
     
     private lazy var descriptionStackView: MovieDetailsStackViewItem = {
         let stackView = MovieDetailsStackViewItem(title: "Descriprion")
+        stackView.contentText = "It looks like there is no description."
         return stackView
     }()
     
     private lazy var releaseDateStackView: MovieDetailsStackViewItem = {
         let stackView = MovieDetailsStackViewItem(title: "Release date")
+        stackView.contentText = "Release unknown."
         return stackView
     }()
     
     private lazy var ratingStackView: MovieDetailsStackViewItem = {
         let stackView = MovieDetailsStackViewItem(title: "Rating")
+        stackView.contentText = "Rating unknown"
         return stackView
     }()
     
     private lazy var productionStackView: MovieDetailsStackViewItem = {
         let stackView = MovieDetailsStackViewItem(title: "Production")
+        stackView.contentText = "Production unknown."
         return stackView
     }()
     
     private lazy var genresStackView: MovieDetailsStackViewItem = {
         let stackView = MovieDetailsStackViewItem(title: "Genres")
+        stackView.contentText = "Genres unknown"
         return stackView
     }()
     
@@ -207,6 +215,7 @@ private extension MovieDetailsViewController {
             ),
             trailerButton.heightAnchor.constraint(equalTo: trailerButton.widthAnchor),
         ])
+        view.layoutIfNeeded()
     }
     
     @objc
@@ -244,6 +253,10 @@ extension MovieDetailsViewController: MovieDetailsView {
         descriptionStackView.contentText = movie.overview
         ratingStackView.contentText = movie.voteAverage
         productionStackView.contentText = movie.country
+    }
+    
+    func updateTrailerButton(isHidden: Bool) {
+        trailerButton.isHidden = isHidden
     }
     
     func showYouTubePlayer(with videoKeys: [String]) {

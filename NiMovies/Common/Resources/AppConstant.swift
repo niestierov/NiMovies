@@ -8,6 +8,7 @@
 import Foundation
 
 typealias EmptyBlock = () -> Void
+typealias EndpointRequestCompletion<T: Codable> = (Result<Endpoint<T>.ResponseType?, Error>) -> Void
 
 struct AppConstant {
     static let initialLoadingAnimationName = "InitialLoadingAnimation"

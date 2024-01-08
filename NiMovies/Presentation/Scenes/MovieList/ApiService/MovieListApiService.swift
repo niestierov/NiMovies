@@ -7,17 +7,6 @@
 
 import Foundation
 
-fileprivate enum MovieListError: Error, LocalizedError {
-    case movieGenresDataIsEmpty
-    
-    var errorDescription: String? {
-        switch self {
-        case .movieGenresDataIsEmpty:
-            AppConstant.defaultErrorMessage + "An error occurred while playing this trailer."
-        }
-    }
-}
-
 protocol MovieListApiService {
     func fetchMovieList(
         by sort: MovieListSortType,
@@ -81,7 +70,6 @@ final class DefaultMovieListApiService: MovieListApiService {
             case .success(let result):
                 guard let result,
                       !result.genres.isEmpty else {
-                    completion(.failure(MovieListError.movieGenresDataIsEmpty))
                     return
                 }
                 completion(.success(result.genres))
@@ -96,7 +84,7 @@ final class DefaultMovieListApiService: MovieListApiService {
 // MARK: - Private -
 
 private extension DefaultMovieListApiService {
-    private func fetchMovieList(
+    func fetchMovieList(
         with endpointPath: MovieListEndpoint,
         completion: @escaping (Result<[MovieResult], Error>) -> Void
     ) {
@@ -122,7 +110,7 @@ private extension DefaultMovieListApiService {
 // MARK: - MovieListEndpoint -
 
 extension DefaultMovieListApiService {
-    private enum MovieListEndpoint {
+    fileprivate enum MovieListEndpoint {
         case list(sortType: MovieListSortType, page: Int)
         case search(query: String, page: Int)
         case genres
