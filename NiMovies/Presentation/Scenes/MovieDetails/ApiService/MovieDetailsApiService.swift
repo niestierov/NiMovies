@@ -22,7 +22,7 @@ fileprivate enum MovieDetailsError: Error, LocalizedError {
 protocol MovieDetailsApiService {
     func fetchMovieDetails(
         movieId: Int,
-        completion: @escaping (Result<MovieDetailsViewState.Movie, Error>) -> Void
+        completion: @escaping (Result<MovieDetailsResult, Error>) -> Void
     )
     func fetchMovieVideos(
         movieId: Int,
@@ -50,7 +50,7 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
     
     func fetchMovieDetails(
         movieId: Int,
-        completion: @escaping (Result<MovieDetailsViewState.Movie, Error>) -> Void
+        completion: @escaping (Result<MovieDetailsResult, Error>) -> Void
     ) {
         let endpointPath = MovieDetailsEndpoint.details(movieId: movieId)
         let endpoint = Endpoint<MovieDetailsResult>(
@@ -65,8 +65,7 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
                 guard let result else {
                     return
                 }
-                let movie = MovieDetailsViewState.makeMovie(result)
-                completion(.success(movie))
+                completion(.success(result))
                 
             case .failure(let error):
                 completion(.failure(error))

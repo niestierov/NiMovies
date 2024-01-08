@@ -70,9 +70,8 @@ private extension DefaultMovieDetailsPresenter {
             }
             
             switch result {
-            case .success(let movie):
-                view.update(with: movie)
-                movieDetailsViewState.movie = movie
+            case .success(let movieResult):
+                updateViewState(with: movieResult)
             case.failure(let error):
                 view.showError(message: error.localizedDescription)
             }
@@ -92,5 +91,11 @@ private extension DefaultMovieDetailsPresenter {
                 view.showError(message: error.localizedDescription)
             }
         }
+    }
+    
+    func updateViewState(with movieResult: MovieDetailsResult) {
+        let movie = MovieDetailsViewState.makeMovie(movieResult)
+        view.update(with: movie)
+        movieDetailsViewState.movie = movie
     }
 }
