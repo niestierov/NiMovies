@@ -10,8 +10,8 @@ import UIKit
 
 protocol MovieDetailsPresenter {
     func initialLoad()
-    func didTapTrailerButton()
     func getPosterUrl() -> String?
+    func getVideoKeys() -> [String]?
 }
 
 final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
@@ -22,6 +22,7 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     private let apiService: MovieDetailsApiService
     private let movieId: Int
     private var movieDetailsViewState = MovieDetailsViewState()
+    private var videoKeys: [String]?
     
     // MARK: - Init -
     
@@ -38,12 +39,9 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     // MARK: - Internal -
     
     func initialLoad() {
-        fetchMovieDetails()
-    }
-    
-    func didTapTrailerButton() {
-        fetchMovieVideos { url in
-            
+        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+            self?.fetchMovieDetails()
+            self?.fetchMovieVideos()
         }
     }
     
@@ -52,6 +50,13 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
             return nil
         }
         return posterUrl
+    }
+    
+    func getVideoKeys() -> [String]? {
+        guard let videoKeys else {
+            return nil
+        }
+        return videoKeys
     }
 }
 
@@ -66,23 +71,23 @@ private extension DefaultMovieDetailsPresenter {
             
             switch result {
             case .success(let movie):
-                movieDetailsViewState.movie = movie
                 view.update(with: movie)
+                movieDetailsViewState.movie = movie
             case.failure(let error):
                 view.showError(message: error.localizedDescription)
             }
         }
     }
     
-    func fetchMovieVideos(completion: @escaping (URL) -> Void) {
+    func fetchMovieVideos() {
         apiService.fetchMovieVideos(movieId: movieId) { [weak self] result in
             guard let self else {
                 return
             }
             
             switch result {
-            case .success(let url):
-                completion(url)
+            case .success(let videoKeys):
+                self.videoKeys = videoKeys
             case.failure(let error):
                 view.showError(message: error.localizedDescription)
             }

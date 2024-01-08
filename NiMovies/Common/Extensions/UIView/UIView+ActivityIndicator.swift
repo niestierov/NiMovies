@@ -12,20 +12,32 @@ extension UIView {
         return 999
     }
 
-    func showActivityIndicator(style: UIActivityIndicatorView.Style = .medium) {
-        if viewWithTag(activityIndicatorTag) == nil {
-            let activityIndicator = UIActivityIndicatorView(style: style)
-            activityIndicator.tag = activityIndicatorTag
-            activityIndicator.center = center
-            activityIndicator.startAnimating()
-            addSubview(activityIndicator)
+    func showActivityIndicator(
+        color: UIColor = .black,
+        style: UIActivityIndicatorView.Style = .medium
+    ) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            
+            if viewWithTag(activityIndicatorTag) == nil {
+                let activityIndicator = UIActivityIndicatorView(style: style)
+                activityIndicator.tag = activityIndicatorTag
+                activityIndicator.center = center
+                activityIndicator.color = color
+                activityIndicator.startAnimating()
+                addSubview(activityIndicator)
+            }
         }
     }
 
     func hideActivityIndicator() {
-        if let activityIndicator = viewWithTag(activityIndicatorTag) as? UIActivityIndicatorView {
-            activityIndicator.stopAnimating()
-            activityIndicator.removeFromSuperview()
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            
+            if let activityIndicator = viewWithTag(activityIndicatorTag) as? UIActivityIndicatorView {
+                activityIndicator.stopAnimating()
+                activityIndicator.removeFromSuperview()
+            }
         }
     }
 }

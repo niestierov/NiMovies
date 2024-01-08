@@ -8,10 +8,6 @@
 import Foundation
 
 struct MovieDetailsViewState {
-    private struct Constant {
-        
-    }
-    
     struct Movie {
         let title: String
         let backdropUrlString: String
@@ -27,15 +23,10 @@ struct MovieDetailsViewState {
 }
 
 extension MovieDetailsViewState {
-    static func makeViewState(for movie: MovieDetailsResult) -> MovieDetailsViewState {
-        let moviesViewState = makeMovie(movie)
-        return MovieDetailsViewState(movie: moviesViewState)
-    }
-
     static func makeMovie(_ movie: MovieDetailsResult) -> MovieDetailsViewState.Movie {
         let backdropUrlString = MovieConfiguration.basePosterUrl + (movie.backdropPath ?? "")
         let posterUrlString = MovieConfiguration.basePosterUrl + (movie.posterPath ?? "")
-        let voteAverage = (movie.voteAverage ?? 0).stringValue
+        let voteAverage = (movie.voteAverage ?? .zero).stringValue
         let title = setDefaultValueIfNeeded(
             for: movie.title,
             with: "Title unknown."
@@ -71,10 +62,11 @@ extension MovieDetailsViewState {
     }
     
     private static func setDefaultValueIfNeeded<T>(for value: T?, with defaultValue: String) -> String {
-        guard let value = value else {
+        guard let value else {
             return defaultValue
         }
         let stringValue = String(describing: value)
+        
         return stringValue.isEmpty ? defaultValue : stringValue
     }
 }

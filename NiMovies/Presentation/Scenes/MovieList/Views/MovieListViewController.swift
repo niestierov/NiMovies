@@ -11,11 +11,12 @@ protocol MovieListView: AnyObject {
     func update()
     func initialUpdate()
     func showError(message: String?)
-    func showScrollToTop(_ isVisible: Bool)
     func showLoadingAnimation(completion: EmptyBlock?)
     func continueLoadingAnimation()
     func hideLoadingAnimation()
     func showNoInternetConnectionError()
+    func updateRequestStartedState()
+    func updateRequestEndedState()
 }
 
 final class MovieListViewController: UIViewController, Alert {
@@ -54,23 +55,6 @@ final class MovieListViewController: UIViewController, Alert {
         collectionView.register(MovieListCollectionViewCell.self)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
-    }()
-    
-    private lazy var scrollToTopButton: UIButton = {
-        let button = UIButton()
-        button.addTarget(
-            self,
-            action: #selector(didTapScrollToTop),
-            for: .touchUpInside
-        )
-        button.isHidden = true
-        button.applyShadow(offset: CGSize(width: 0, height: 2))
-        button.backgroundColor = .white
-        button.tintColor = .black
-        let image = UIImage(systemName: Constant.scrollToTopButtonImageName)
-        button.setImage(image, for: .normal)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
     }()
     
     private lazy var sortButton: UIBarButtonItem = {
@@ -120,12 +104,6 @@ final class MovieListViewController: UIViewController, Alert {
         presenter.initialLoad()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        scrollToTopButton.applyRoundedCorners(radius: scrollToTopButton.frame.width / 2)
-    }
-    
     // MARK: - Internal -
     
     func inject(
@@ -141,7 +119,9 @@ final class MovieListViewController: UIViewController, Alert {
 
 extension MovieListViewController: MovieListView {
     func update() {
-        collectionView.reloadData()
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
     }
     
     func initialUpdate() {
@@ -150,14 +130,6 @@ extension MovieListViewController: MovieListView {
     
     func showError(message: String?) {
         showAlert(message: message ?? AppConstant.defaultErrorMessage)
-    }
-    
-    func showScrollToTop(_ isVisible: Bool) {
-        UIView.animate(withDuration: 0.3) {
-            self.scrollToTopButton.alpha = isVisible ? 1 : 0
-        } completion: { _ in
-            self.scrollToTopButton.isHidden = !isVisible
-        }
     }
     
     func showLoadingAnimation(completion: EmptyBlock? = nil) {
@@ -179,11 +151,20 @@ extension MovieListViewController: MovieListView {
         ) {
             UIApplication.openAppSettings()
         }
-    
+        let continueWithoutInternet = AlertButtonAction.default()
+        
         showAlert(
             message: AppConstant.noInternetConnectionMessage,
-            actions: [openAppSettingAction]
+            actions: [openAppSettingAction, continueWithoutInternet]
         )
+    }
+    
+    func updateRequestStartedState() {
+        collectionView.showActivityIndicator()
+    }
+    
+    func updateRequestEndedState() {
+        collectionView.hideActivityIndicator()
     }
 }
 
@@ -201,24 +182,12 @@ private extension MovieListViewController {
         view.backgroundColor = .white
         
         view.addSubview(collectionView)
-        view.addSubview(scrollToTopButton)
-        
+
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            
-            scrollToTopButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            scrollToTopButton.trailingAnchor.constraint(
-                equalTo: view.safeAreaLayoutGuide.trailingAnchor,
-                constant: -20
-            ),
-            scrollToTopButton.widthAnchor.constraint(
-                equalTo: view.widthAnchor,
-                multiplier: 1/7
-            ),
-            scrollToTopButton.heightAnchor.constraint(equalTo: scrollToTopButton.widthAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor)
         ])
     }
     
@@ -318,10 +287,8 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
                 }
                 presenter.didScrollView(at: indexPath.row)
             }
-            
             return section
         }
-        
         return layout
     }
 }

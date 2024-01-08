@@ -22,6 +22,7 @@ final class MovieDetailsViewController: UIViewController, Alert {
     
     private var presenter: MovieDetailsPresenter!
     private var imageScreenView: ImageScreenView!
+    private var youTubePlayerView: YouTubePlayerView!
     
     // MARK: - UI Components -
     
@@ -137,10 +138,12 @@ final class MovieDetailsViewController: UIViewController, Alert {
     
     func inject(
         presenter: MovieDetailsPresenter,
-        imageScreenView: ImageScreenView
+        imageScreenView: ImageScreenView,
+        youTubePlayerView: YouTubePlayerView
     ) {
         self.presenter = presenter
         self.imageScreenView = imageScreenView
+        self.youTubePlayerView = youTubePlayerView
     }
 }
 
@@ -216,7 +219,11 @@ private extension MovieDetailsViewController {
     
     @objc
     func didTapTrailerButton() {
-        presenter.didTapTrailerButton()
+        guard let videoKeys = presenter.getVideoKeys() else {
+            showError(message: AppConstant.defaultErrorMessage)
+            return
+        }
+        youTubePlayerView.showAndPlayVideo(with: videoKeys, on: self)
     }
 }
 
@@ -237,5 +244,9 @@ extension MovieDetailsViewController: MovieDetailsView {
         descriptionStackView.contentText = movie.overview
         ratingStackView.contentText = movie.voteAverage
         productionStackView.contentText = movie.country
+    }
+    
+    func showYouTubePlayer(with videoKeys: [String]) {
+        youTubePlayerView.showAndPlayVideo(with: videoKeys, on: self)
     }
 }

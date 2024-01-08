@@ -20,20 +20,12 @@ struct MovieListViewState {
     var movies: [Movie] = []
 }
 
-extension MovieListViewState {
-    static func makeViewState(
-        for movieList: MovieListResult,
+extension MovieListViewState {    
+    mutating func appendMovieList(
+        _ movieList: [MovieResult],
         with genreList: [MovieGenre]
-    ) -> MovieListViewState {
-        let moviesViewState = makeMovieList(movieList, with: genreList)
-        return MovieListViewState(movies: moviesViewState)
-    }
-    
-    static func makeMovieList(
-        _ movieList: MovieListResult,
-        with genreList: [MovieGenre]
-    ) -> [MovieListViewState.Movie] {
-        movieList.results.compactMap { movie in
+    ) {
+        let additionalMovies = movieList.compactMap { movie in
             let image = MovieConfiguration.basePosterUrl + (movie.backdropPath ?? "")
             let releaseDate = movie.releaseDate ?? ""
             let voteAverage = (movie.voteAverage ?? .zero).stringValue
@@ -50,5 +42,6 @@ extension MovieListViewState {
                 voteAverage: voteAverage
             )
         }
+        movies.append(contentsOf: additionalMovies)
     }
 }

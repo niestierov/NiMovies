@@ -7,18 +7,27 @@
 
 import Foundation
 
+fileprivate enum MovieListError: Error, LocalizedError {
+    case movieGenresDataIsEmpty
+    
+    var errorDescription: String? {
+        switch self {
+        case .movieGenresDataIsEmpty:
+            AppConstant.defaultErrorMessage + "An error occurred while playing this trailer."
+        }
+    }
+}
+
 protocol MovieListApiService {
     func fetchMovieList(
         by sort: MovieListSortType,
         for page: Int,
-        genres: [MovieGenre],
-        completion: @escaping (Result<[MovieListViewState.Movie], Error>) -> Void
+        completion: @escaping (Result<[MovieResult], Error>) -> Void
     )
     func fetchSearch(
         with query: String,
         for page: Int,
-        genres: [MovieGenre],
-        completion: @escaping (Result<[MovieListViewState.Movie], Error>) -> Void
+        completion: @escaping (Result<[MovieResult], Error>) -> Void
     )
     func fetchMoviesGenreList(
         completion: @escaping (Result<[MovieGenre], Error>) -> Void
@@ -42,35 +51,25 @@ final class DefaultMovieListApiService: MovieListApiService {
     func fetchMovieList(
         by sort: MovieListSortType,
         for page: Int,
-        genres: [MovieGenre],
-        completion: @escaping (Result<[MovieListViewState.Movie], Error>) -> Void
+        completion: @escaping (Result<[MovieResult], Error>) -> Void
     ) {
-        let endpointPath = MovieEndpoint.list(sortType: sort, page: page)
-        fetchMovies(
-            with: endpointPath,
-            genres: genres,
-            completion: completion
-        )
+        let endpointPath = MovieListEndpoint.list(sortType: sort, page: page)
+        fetchMovieList(with: endpointPath, completion: completion)
     }
 
     func fetchSearch(
         with query: String,
         for page: Int,
-        genres: [MovieGenre],
-        completion: @escaping (Result<[MovieListViewState.Movie], Error>) -> Void
+        completion: @escaping (Result<[MovieResult], Error>) -> Void
     ) {
-        let endpointPath = MovieEndpoint.search(query: query, page: page)
-        fetchMovies(
-            with: endpointPath,
-            genres: genres,
-            completion: completion
-        )
+        let endpointPath = MovieListEndpoint.search(query: query, page: page)
+        fetchMovieList(with: endpointPath, completion: completion)
     }
     
     func fetchMoviesGenreList(
         completion: @escaping (Result<[MovieGenre], Error>) -> Void
     ) {
-        let endpointPath = MovieEndpoint.genres
+        let endpointPath = MovieListEndpoint.genres
         let endpoint = Endpoint<MoviesGenreList>(
             url: endpointPath.url,
             parameters: endpointPath.parameters,
@@ -80,7 +79,13 @@ final class DefaultMovieListApiService: MovieListApiService {
         networkService.request(endpoint: endpoint) { response in
             switch response {
             case .success(let result):
-                completion(.success(result?.genres ?? []))
+                guard let result,
+                      !result.genres.isEmpty else {
+                    completion(.failure(MovieListError.movieGenresDataIsEmpty))
+                    return
+                }
+                completion(.success(result.genres))
+                
             case .failure(let error):
                 completion(.failure(error))
             }
@@ -88,37 +93,36 @@ final class DefaultMovieListApiService: MovieListApiService {
     }
 }
 
+// MARK: - Private -
+
 private extension DefaultMovieListApiService {
-    func fetchMovies(
-        with endpointPath: MovieEndpoint,
-        genres: [MovieGenre],
-        completion: @escaping (Result<[MovieListViewState.Movie], Error>) -> Void
+    private func fetchMovieList(
+        with endpointPath: MovieListEndpoint,
+        completion: @escaping (Result<[MovieResult], Error>) -> Void
     ) {
         let endpoint = Endpoint<MovieListResult>(
             url: endpointPath.url,
             parameters: endpointPath.parameters,
             method: .get
         )
-        
         networkService.request(endpoint: endpoint) { response in
             switch response {
             case .success(let result):
                 guard let result else {
                     return
                 }
-                let movieList = MovieListViewState.makeMovieList(
-                    result,
-                    with: genres
-                )
-                completion(.success(movieList))
-                
+                completion(.success(result.results))
             case .failure(let error):
                 completion(.failure(error))
             }
         }
     }
-    
-    enum MovieEndpoint {
+}
+
+// MARK: - MovieListEndpoint -
+
+extension DefaultMovieListApiService {
+    private enum MovieListEndpoint {
         case list(sortType: MovieListSortType, page: Int)
         case search(query: String, page: Int)
         case genres
