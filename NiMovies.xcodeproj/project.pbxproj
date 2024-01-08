@@ -49,7 +49,7 @@
 		9AC7EC0F2B44A12D00014E97 /* StringConvertible+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AC7EC0E2B44A12D00014E97 /* StringConvertible+Extension.swift */; };
 		9AC7EC112B44AFD100014E97 /* MovieConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AC7EC102B44AFD100014E97 /* MovieConfiguration.swift */; };
 		9AD7F44E2B4AF61300DFCF2D /* YouTubeiOSPlayerHelper in Frameworks */ = {isa = PBXBuildFile; productRef = 9AD7F44D2B4AF61300DFCF2D /* YouTubeiOSPlayerHelper */; };
-		9AD7F4512B4AF6B100DFCF2D /* YoutubePlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD7F4502B4AF6B100DFCF2D /* YoutubePlayerViewController.swift */; };
+		9AD7F4512B4AF6B100DFCF2D /* YouTubePlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD7F4502B4AF6B100DFCF2D /* YouTubePlayerViewController.swift */; };
 		9AF09C7E2B498C2F00352535 /* MovieDetailsPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF09C7D2B498C2F00352535 /* MovieDetailsPresenter.swift */; };
 		9AF09C802B498C9400352535 /* MovieDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF09C7F2B498C9400352535 /* MovieDetailsViewController.swift */; };
 		9AF09C822B498D3E00352535 /* MovieDetailsResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF09C812B498D3E00352535 /* MovieDetailsResult.swift */; };
@@ -103,7 +103,7 @@
 		9A86F0342B49E176008E8881 /* MovieVideoResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieVideoResult.swift; sourceTree = "<group>"; };
 		9AC7EC0E2B44A12D00014E97 /* StringConvertible+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StringConvertible+Extension.swift"; sourceTree = "<group>"; };
 		9AC7EC102B44AFD100014E97 /* MovieConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieConfiguration.swift; sourceTree = "<group>"; };
-		9AD7F4502B4AF6B100DFCF2D /* YoutubePlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoutubePlayerViewController.swift; sourceTree = "<group>"; };
+		9AD7F4502B4AF6B100DFCF2D /* YouTubePlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouTubePlayerViewController.swift; sourceTree = "<group>"; };
 		9AF09C7D2B498C2F00352535 /* MovieDetailsPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsPresenter.swift; sourceTree = "<group>"; };
 		9AF09C7F2B498C9400352535 /* MovieDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsViewController.swift; sourceTree = "<group>"; };
 		9AF09C812B498D3E00352535 /* MovieDetailsResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDetailsResult.swift; sourceTree = "<group>"; };
@@ -426,12 +426,12 @@
 			path = UICollectionView;
 			sourceTree = "<group>";
 		};
-		9AD7F44F2B4AF69200DFCF2D /* YoutubePlayer */ = {
+		9AD7F44F2B4AF69200DFCF2D /* YouTubePlayer */ = {
 			isa = PBXGroup;
 			children = (
-				9AD7F4502B4AF6B100DFCF2D /* YoutubePlayerViewController.swift */,
+				9AD7F4502B4AF6B100DFCF2D /* YouTubePlayerViewController.swift */,
 			);
-			path = YoutubePlayer;
+			path = YouTubePlayer;
 			sourceTree = "<group>";
 		};
 		9AF09C762B498BC200352535 /* MovieDetails */ = {
@@ -500,7 +500,7 @@
 		9AFBCDDA2B487A8700A2367D /* Custom */ = {
 			isa = PBXGroup;
 			children = (
-				9AD7F44F2B4AF69200DFCF2D /* YoutubePlayer */,
+				9AD7F44F2B4AF69200DFCF2D /* YouTubePlayer */,
 				9A6143C12B4AAFBF0028CD92 /* ImageScreen */,
 				9A6C60F92B4971CA0051AA5C /* LoadingAnimation */,
 			);
@@ -634,7 +634,7 @@
 				9A09B7212B4443A8003668B7 /* UICollectionViewLayoutProvider+Extension.swift in Sources */,
 				9A09B6F82B440383003668B7 /* JSONDecoder+Default.swift in Sources */,
 				9A09B6FB2B443A56003668B7 /* ApiConstant.swift in Sources */,
-				9AD7F4512B4AF6B100DFCF2D /* YoutubePlayerViewController.swift in Sources */,
+				9AD7F4512B4AF6B100DFCF2D /* YouTubePlayerViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

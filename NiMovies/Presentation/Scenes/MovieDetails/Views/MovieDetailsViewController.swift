@@ -10,7 +10,6 @@ import UIKit
 protocol MovieDetailsView: AnyObject {
     func showError(message: String?)
     func update(with movie: MovieDetailsViewState.Movie)
-    func showYouTubePlayer(with keys: [String])
 }
 
 final class MovieDetailsViewController: UIViewController, Alert {
@@ -220,7 +219,11 @@ private extension MovieDetailsViewController {
     
     @objc
     func didTapTrailerButton() {
-        presenter.didTapTrailerButton()
+        guard let videoKeys = presenter.getVideoKeys() else {
+            showError(message: AppConstant.defaultErrorMessage)
+            return
+        }
+        youTubePlayerView.showAndPlayVideo(with: videoKeys, on: self)
     }
 }
 
@@ -243,7 +246,7 @@ extension MovieDetailsViewController: MovieDetailsView {
         productionStackView.contentText = movie.country
     }
     
-    func showYouTubePlayer(with keys: [String]) {
-        youTubePlayerView.showAndPlayVideo(with: keys, on: self)
+    func showYouTubePlayer(with videoKeys: [String]) {
+        youTubePlayerView.showAndPlayVideo(with: videoKeys, on: self)
     }
 }

@@ -14,6 +14,6 @@ struct MovieConfiguration {
     static let apiKey = "api_key"
     
     static func getSecretKey() -> String {
-        Bundle.main.object(forInfoDictionaryKey: apiSecretKey) as? String ?? ""
+        Bundle.main.object(forInfoDictionaryKey: apiSecretKey) as! String
     }
 }

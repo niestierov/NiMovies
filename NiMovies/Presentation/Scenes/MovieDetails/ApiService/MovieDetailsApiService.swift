@@ -7,7 +7,7 @@
 
 import Foundation
 
-private enum MovieDetailsError: Error, LocalizedError {
+fileprivate enum MovieDetailsError: Error, LocalizedError {
     case videoDataIsEmpty
     case videoKeyIsMissing
     
@@ -94,7 +94,7 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
                     completion(.failure(MovieDetailsError.videoDataIsEmpty))
                     return
                 }
-                guard var keys = self.getVideoKeys(by: result.results) else {
+                guard let keys = self.getVideoKeys(by: result.results) else {
                     completion(.failure(MovieDetailsError.videoKeyIsMissing))
                     return
                 }

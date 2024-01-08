@@ -15,8 +15,8 @@ final class DefaultMovieListAssembly: MovieListAssembly {
     func createMovieList() -> UINavigationController {
         let networkService: NetworkService = ServiceLocator.shared.resolve()
         let apiService: MovieListApiService = DefaultMovieListApiService(networkService: networkService)
-        
         let loadingAnimationView: LoadingAnimationView = LoadingAnimationViewController()
+        
         let viewController = MovieListViewController()
         let router: MovieListRouter = DefaultMovieListRouter(root: viewController)
         let presenter = DefaultMovieListPresenter(

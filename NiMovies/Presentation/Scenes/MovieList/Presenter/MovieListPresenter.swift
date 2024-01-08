@@ -42,6 +42,12 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     }
     private var isRequestLoading = false
     private var latestSearchQuery: String?
+    private var latestMovieListResult: [MovieResult] = []
+    private var isConnectedToInternet: Bool {
+        NetworkReachabilityService.isConnectedToInternet
+    }
+    private var lastInternetConnectionStatus: Bool = false
+    private var isErrorAlertIsReadyToBeShown = true
     
     // MARK: - Init -
     
@@ -53,30 +59,45 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         self.view = view
         self.router = router
         self.apiService = apiService
-        
-        setupNotificationCenter()
     }
     
     // MARK: - Internal -
     
     func initialLoad() {
         let initialLoadGroup = DispatchGroup()
-        
+
         initialLoadGroup.enter()
         view.showLoadingAnimation {
             initialLoadGroup.leave()
         }
         
         initialLoadGroup.enter()
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.fetchMoviesGenreList() { [weak self] in
-                self?.fetchMovieList(isInitial: false)
+
+        if isConnectedToInternet {
+            let requestsGroup = DispatchGroup()
+            
+            DispatchQueue.global(qos: .userInitiated).async(group: requestsGroup) {
+                self.fetchMoviesGenreList()
+            }
+            
+            DispatchQueue.global(qos: .userInitiated).async(group: requestsGroup) {
+                self.fetchMovieList(isInitial: false)
+            }
+
+            requestsGroup.notify(queue: .global(qos: .userInitiated)) {
+                self.updateMovieListViewState(with: self.latestMovieListResult)
                 initialLoadGroup.leave()
             }
+        } else {
+            initialLoadGroup.leave()
         }
-        
+
         initialLoadGroup.notify(queue: .main) {
             self.view.hideLoadingAnimation()
+            
+            if !self.isConnectedToInternet {
+                self.view.showNoInternetConnectionError()
+            }
         }
     }
 
@@ -120,10 +141,16 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     }
 
     func didScrollView(at index: Int) {
-        showToTopButtonIfNeeded(for: index)
-        
-        guard getMovieListCount() - Constant.paginationValueUntilLoad <= index,
+        guard index >= getMovieListCount() - Constant.paginationValueUntilLoad,
               !isRequestLoading else {
+            return
+        }
+        
+        guard isConnectedToInternet else {
+            if isErrorAlertIsReadyToBeShown {
+                isErrorAlertIsReadyToBeShown = false
+                view.showNoInternetConnectionError()
+            }
             return
         }
         
@@ -145,7 +172,6 @@ final class DefaultMovieListPresenter: MovieListPresenter {
 private extension DefaultMovieListPresenter {
     func fetchMovieList(isInitial: Bool) {
         isRequestLoading = true
-        view.updateRequestStartedState()
         
         if isInitial {
             movieListViewState.movies = []
@@ -154,19 +180,16 @@ private extension DefaultMovieListPresenter {
         
         apiService.fetchMovieList(
             by: sortType,
-            for: currentPage,
-            genres: moviesGenreList
+            for: currentPage
         ) { [weak self] response in
-            guard let self else {
-                return
-            }
+            guard let self else { return }
+            
             isRequestLoading = false
-            view.updateRequestEndedState()
             
             switch response {
             case .success(let movieList):
-                movieListViewState.movies.append(contentsOf: movieList)
-                view.update()
+                latestMovieListResult = movieList
+                updateMovieListViewState(with: movieList)
             case .failure(let error):
                 view.showError(message: error.localizedDescription)
             }
@@ -175,10 +198,10 @@ private extension DefaultMovieListPresenter {
     
     func fetchMovieSearch(
         with query: String,
-        isInitialSearch: Bool
+        isInitialSearch: Bool,
+        completion: ((Result<[MovieResult], Error>) -> Void)? = nil
     ) {
         isRequestLoading = true
-        view.updateRequestStartedState()
         
         if isInitialSearch {
             movieListViewState.movies = []
@@ -187,66 +210,50 @@ private extension DefaultMovieListPresenter {
         
         apiService.fetchSearch(
             with: query,
-            for: currentPage,
-            genres: moviesGenreList
+            for: currentPage
         ) { [weak self] response in
-            guard let self else {
-                return
-            }
+            guard let self else { return }
+            
             isRequestLoading = false
-            view.updateRequestEndedState()
             
             switch response {
             case .success(let movieList):
-                movieListViewState.movies.append(contentsOf: movieList)
-                view.update()
+                if let completion {
+                    completion(.success(movieList))
+                } else {
+                    updateMovieListViewState(with: movieList)
+                }
             case .failure(let error):
-                view.showError(message: error.localizedDescription)
+                if let completion {
+                    completion(.failure(error))
+                } else {
+                    view.showError(message: error.localizedDescription)
+                }
             }
         }
     }
     
-    func fetchMoviesGenreList(completion: EmptyBlock? = nil) {
-        view.updateRequestStartedState()
-        
+    func fetchMoviesGenreList(completion: ((Result<[MovieGenre], Error>) -> Void)? = nil) {
         apiService.fetchMoviesGenreList { [weak self] result in
             guard let self else {
                 return
             }
-
-            view.updateRequestEndedState()
             
             switch result {
             case .success(let genreList):
                 moviesGenreList = genreList
-                completion?()
             case .failure(let error):
-                view.showError(message: error.localizedDescription)
+                if let completion {
+                    completion(.failure(error))
+                } else {
+                    view.showError(message: error.localizedDescription)
+                }
             }
         }
     }
     
-    func showToTopButtonIfNeeded(for index: Int) {
-        if index == Constant.scrollToTopButtonScope {
-            view.showScrollToTop(true)
-        } else if index < Constant.scrollToTopButtonScope {
-            view.showScrollToTop(false)
-        }
-    }
-    
-    func setupNotificationCenter() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appDidBecomeActive),
-            name: UIApplication.didBecomeActiveNotification,
-            object: nil
-        )
-    }
-    
-    @objc
-    func appDidBecomeActive() {
-        if !NetworkReachabilityService.isConnectedToInternet {
-            view.showNoInternetConnectionError()
-        }
+    func updateMovieListViewState(with movieList: [MovieResult]) {
+        movieListViewState.appendMovieList(movieList, with: moviesGenreList)
+        view.update()
     }
 }
