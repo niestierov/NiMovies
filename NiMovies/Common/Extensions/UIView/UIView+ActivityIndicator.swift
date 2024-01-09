@@ -22,7 +22,10 @@ extension UIView {
             if viewWithTag(activityIndicatorTag) == nil {
                 let activityIndicator = UIActivityIndicatorView(style: style)
                 activityIndicator.tag = activityIndicatorTag
-                activityIndicator.center = center
+                activityIndicator.center = CGPoint(
+                    x: bounds.width / 2,
+                    y: bounds.height / 2
+                )
                 activityIndicator.color = color
                 activityIndicator.startAnimating()
                 addSubview(activityIndicator)

@@ -9,7 +9,7 @@ import UIKit
 
 protocol MovieListView: AnyObject {
     func update()
-    func initialUpdate()
+    func update(with indexPaths: [IndexPath])
     func showError(message: String?)
     func showLoadingAnimation(completion: EmptyBlock?)
     func continueLoadingAnimation()
@@ -52,6 +52,10 @@ final class MovieListViewController: UIViewController, Alert {
         collectionView.backgroundColor = .clear
         collectionView.delegate = self
         collectionView.dataSource = self
+        collectionView.register(
+            MovieListFooterView.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionFooter
+        )
         collectionView.register(MovieListCollectionViewCell.self)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
@@ -118,14 +122,13 @@ final class MovieListViewController: UIViewController, Alert {
 // MARK: - MovieListView -
 
 extension MovieListViewController: MovieListView {
-    func update() {
-        DispatchQueue.main.async {
-            self.collectionView.reloadData()
-        }
+    func update(with indexPaths: [IndexPath]) {
+        collectionView.insertItems(at: indexPaths)
     }
     
-    func initialUpdate() {
+    func update() {
         scrollToTop(animated: true)
+        collectionView.reloadData()
     }
     
     func showError(message: String?) {
@@ -241,6 +244,23 @@ extension MovieListViewController: UICollectionViewDataSource {
         
         return cell
     }
+    
+    func collectionView(
+        _ collectionView: UICollectionView,
+        viewForSupplementaryElementOfKind kind: String,
+        at indexPath: IndexPath
+    ) -> UICollectionReusableView {
+        switch kind {
+        case UICollectionView.elementKindSectionFooter:
+            return collectionView.dequeue(
+                ofKind: kind,
+                viewType: MovieListFooterView.self,
+                for: indexPath
+            )
+        default:
+            return UICollectionReusableView()
+        }
+    }
 }
 
 // MARK: - UISearchBarDelegate -
@@ -262,7 +282,7 @@ extension MovieListViewController: UISearchBarDelegate {
 // MARK: - UICollectionViewLayoutProvider -
 
 extension MovieListViewController: UICollectionViewLayoutProvider {
-    func makeCompositionalLayout() -> UICollectionViewCompositionalLayout {
+    private func makeCompositionalLayout() -> UICollectionViewCompositionalLayout {
         let layout = UICollectionViewCompositionalLayout { [weak self] section, environment in
             guard let self else {
                 return nil
@@ -271,6 +291,10 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
             let item = createItem(height: .absolute(Constant.movieItemHeight))
             let group = createVerticalGroup(with: [item])
             let section = createSection(with: group)
+            let footer = createFooter(
+                ofKind: UICollectionView.elementKindSectionFooter,
+                height: .absolute(50)
+            )
             
             section.orthogonalScrollingBehavior = .none
             section.contentInsets = NSDirectionalEdgeInsets(
@@ -280,6 +304,7 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
                 trailing: 16
             )
             section.interGroupSpacing = Constant.sectionInterGroupSpacing
+            section.boundarySupplementaryItems = [footer]
             
             section.visibleItemsInvalidationHandler = { [weak self] (items, offset, env) -> Void in
                 guard let self, let indexPath = items.last?.indexPath else {

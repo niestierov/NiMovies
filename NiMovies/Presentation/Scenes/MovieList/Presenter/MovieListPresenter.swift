@@ -70,19 +70,17 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     }
 
     func getMovieListCount() -> Int {
-        movieListViewState.movies.count
+        return movieListViewState.movies.count
     }
     
     func getMovie(at index: Int) -> MovieListViewState.Movie? {
-        if !movieListViewState.movies.isEmpty {
-            return movieListViewState.movies[index]
-        }
-        return nil
+        return movieListViewState.movies[index]
     }
     
     func sortMovies(by sortType: MovieListSortType) {
         self.sortType = sortType
-        fetchMovieList(isInitial: true)
+        movieListViewState.movies = []
+        fetchMovieList()
     }
     
     func searchMovies(query: String?) {
@@ -90,7 +88,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         
         guard let query, !query.isEmpty else {
             currentSearchQuery = nil
-            fetchMovieList(isInitial: true)
+            movieListViewState.movies = []
             return
         }
         
@@ -103,7 +101,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         }
         
         DispatchQueue.global().asyncAfter(
-            deadline: .now() + .milliseconds(500),
+            deadline: .now() + 0.5,
             execute: searchWorkItem!
         )
     }
@@ -125,7 +123,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         if let currentSearchQuery {
             fetchMovieSearch(with: currentSearchQuery, isInitialSearch: false)
         } else {
-            fetchMovieList(isInitial: false)
+            fetchMovieList()
         }
     }
     
@@ -138,16 +136,8 @@ final class DefaultMovieListPresenter: MovieListPresenter {
 }
 
 private extension DefaultMovieListPresenter {
-    func fetchMovieList(
-        isInitial: Bool,
-        completion: (([MovieResult]) -> Void)? = nil
-    ) {
+    func fetchMovieList(completion: (([MovieResult]) -> Void)? = nil) {
         isRequestLoading = true
-        
-        if isInitial {
-            movieListViewState.movies = []
-            view.initialUpdate()
-        }
         
         apiService.fetchMovieList(
             by: sortType,
@@ -228,8 +218,22 @@ private extension DefaultMovieListPresenter {
     }
     
     func updateMovieListViewState(with movieList: [MovieResult]) {
+        let isInitialUpdate = getMovieListCount() == .zero
+
         movieListViewState.appendMovieList(movieList, with: moviesGenreList)
-        view.update()
+
+        if isInitialUpdate {
+            view.update()
+            return
+        }
+        let indexPaths = makeIndexPathsForNewMovieList(with: movieList)
+        view.update(with: indexPaths)
+    }
+    
+    func makeIndexPathsForNewMovieList(with newMovieList: [MovieResult]) -> [IndexPath] {
+        let endIndex = getMovieListCount()
+        let startIndex = endIndex - newMovieList.count
+        return (startIndex..<endIndex).map { IndexPath(item: $0, section: .zero) }
     }
     
     func initialLoadHandler() {
@@ -270,7 +274,7 @@ private extension DefaultMovieListPresenter {
         }
        
         let movieListWorkItem = DispatchWorkItem { [weak self] in
-            self?.fetchMovieList(isInitial: false) { movieList in
+            self?.fetchMovieList() { movieList in
                 movieListResult = movieList
                 requestsGroup.leave()
             }

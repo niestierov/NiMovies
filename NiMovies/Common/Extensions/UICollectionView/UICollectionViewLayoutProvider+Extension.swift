@@ -26,6 +26,12 @@ protocol UICollectionViewLayoutProvider {
     ) -> NSCollectionLayoutGroup
 
     func createSection(with group: NSCollectionLayoutGroup) -> NSCollectionLayoutSection
+    func createFooter(
+        ofKind: String,
+        width: NSCollectionLayoutDimension,
+        height: NSCollectionLayoutDimension,
+        alignment: NSRectAlignment
+    ) -> NSCollectionLayoutBoundarySupplementaryItem
 }
 
 extension UICollectionViewLayoutProvider {
@@ -72,6 +78,24 @@ extension UICollectionViewLayoutProvider {
 
     func createSection(with group: NSCollectionLayoutGroup) -> NSCollectionLayoutSection {
         NSCollectionLayoutSection(group: group)
+    }
+    
+    func createFooter(
+        ofKind: String,
+        width: NSCollectionLayoutDimension = .fractionalWidth(1),
+        height: NSCollectionLayoutDimension = .estimated(44),
+        alignment: NSRectAlignment = .bottom
+    ) -> NSCollectionLayoutBoundarySupplementaryItem {
+        let footerSize = NSCollectionLayoutSize(
+            widthDimension: width,
+            heightDimension: height
+        )
+        let footer = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: footerSize,
+            elementKind: ofKind,
+            alignment: alignment
+        )
+        return footer
     }
 }
 
