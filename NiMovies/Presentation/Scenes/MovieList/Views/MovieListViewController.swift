@@ -24,7 +24,8 @@ final class MovieListViewController: UIViewController, Alert {
         static let titleName = "Popular Movies"
         static let sectionInterGroupSpacing: CGFloat = 15
         static let movieItemHeight: CGFloat = 200
-        static let paginationValueUntilLoad = 3
+        static let paginationValueUntilLoad: CGFloat = movieItemHeight * 3
+        static let defaultSectionInset: CGFloat = 16
     }
     
     // MARK: - Properties -
@@ -103,7 +104,24 @@ final class MovieListViewController: UIViewController, Alert {
             target: nil,
             action: nil
         )
+        button.tintColor = .black
         return button
+    }()
+    
+    private lazy var collectionEmptyView: MovieListEmtpyStateView = {
+        let view = MovieListEmtpyStateView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private lazy var titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Nothing found."
+        label.textColor = .darkGray
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 16, weight: .light)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
 
     // MARK: - Life Cycle -
@@ -125,15 +143,6 @@ final class MovieListViewController: UIViewController, Alert {
         self.presenter = presenter
         self.loadingAnimationView = loadingAnimationView
     }
-    
-    private lazy var emptyViewStateLabel: UILabel = {
-        let label = UILabel()
-        label.isHidden = true
-        label.text = "No results found."
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
 }
      
 // MARK: - Private -
@@ -151,17 +160,22 @@ private extension MovieListViewController {
         view.backgroundColor = .white
         
         view.addSubview(collectionView)
-
+        
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor)
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
         ])
     }
     
     func scrollToTop(animated: Bool) {
         collectionView.setContentOffset(.zero, animated: animated)
+    }
+    
+    func addEmptyViewIfNeeded() {
+        let isNeeded = presenter.getMovieListCount() == .zero
+        collectionView.backgroundView = isNeeded ? collectionEmptyView : nil
     }
     
     @objc
@@ -174,7 +188,7 @@ private extension MovieListViewController {
         present(sortActionSheet, animated: true, completion: nil)
     }
 }
-     
+
  // MARK: - MovieListView -
 
  extension MovieListViewController: MovieListView {
@@ -183,9 +197,9 @@ private extension MovieListViewController {
      }
      
      func update() {
-         emptyViewStateLabel.isHidden = presenter.getMovieListCount() == .zero
-         
          scrollToTop(animated: true)
+         addEmptyViewIfNeeded()
+         
          collectionView.reloadData()
      }
      
@@ -235,6 +249,17 @@ extension MovieListViewController: UICollectionViewDelegate {
             )
         default:
             return UICollectionReusableView()
+        }
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        let boundsHeight = scrollView.bounds.size.height
+        let distanceFromBottom = contentHeight - offsetY - boundsHeight
+
+        if distanceFromBottom < Constant.paginationValueUntilLoad {
+            self.presenter.loadMoreMovies()
         }
     }
 }
@@ -294,31 +319,21 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
             let group = createVerticalGroup(with: [item])
             let section = createSection(with: group)
             
-            let footerHeight: CGFloat = presenter.getMovieListCount() == 0 ? 0 : 50
+            let footerHeight: CGFloat = presenter.getMovieListCount() == .zero ? .zero : 50
             let footer = createFooter(
                 ofKind: UICollectionView.elementKindSectionFooter,
                 height: .absolute(footerHeight)
             )
+            section.boundarySupplementaryItems = [footer]
             
             section.orthogonalScrollingBehavior = .none
             section.contentInsets = NSDirectionalEdgeInsets(
-                top: 16,
-                leading: 16,
-                bottom: 16,
-                trailing: 16
+                top: Constant.defaultSectionInset,
+                leading: Constant.defaultSectionInset,
+                bottom: Constant.defaultSectionInset,
+                trailing: Constant.defaultSectionInset
             )
             section.interGroupSpacing = Constant.sectionInterGroupSpacing
-            section.boundarySupplementaryItems = [footer]
-            
-            section.visibleItemsInvalidationHandler = { [weak self] (items, offset, env) -> Void in
-                guard let self,
-                      let indexPath = items.last?.indexPath,
-                      indexPath.item >= presenter.getMovieListCount() - Constant.paginationValueUntilLoad else {
-                    return
-                }
-                
-                presenter.loadMoreMovies()
-            }
             return section
         }
         return layout

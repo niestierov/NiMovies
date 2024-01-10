@@ -42,11 +42,6 @@ final class DefaultNetworkService: NetworkService {
             of: T.ResponseType.self,
             decoder: JSONDecoder.default
         ) { response in
-            guard NetworkReachabilityService.isConnectedToInternet else {
-                completion(.failure(NetworkError.noInternetConnection))
-                return
-            }
-            
             guard response.data != nil else {
                 completion(.failure(NetworkError.invalidData))
                 return

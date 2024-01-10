@@ -34,7 +34,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     private unowned var view: MovieListView
     private let apiService: MovieListApiService
     private var moviesGenreList: [MovieGenre] = []
-    private var movieList: [MovieResult] = []
+    private var lastMovieListResult: [MovieResult] = []
     private var movieListViewState = MovieListViewState()
     private(set) var sortType: MovieListSortType = .popularityDescending
     private var searchWorkItem: DispatchWorkItem?
@@ -44,7 +44,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         movieListViewState.movies.count / Constant.itemsForPageValue + Constant.initialFetchPage
     }
     private let requestsGroup = DispatchGroup()
-    //private var isInternetConnectionErrorAvailable = true
+    private var isInternetConnectionErrorAvailable = true
     
     // MARK: - Init -
     
@@ -74,8 +74,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     
     func sortMovies(by sortType: MovieListSortType) {
         self.sortType = sortType
-        movieListViewState.movies = []
-        fetchMovieList()
+        fetchMovieList(isNewLoad: true)
     }
     
     func searchMovies(query: String?) {
@@ -83,8 +82,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         
         guard let query, !query.isEmpty else {
             currentSearchQuery = nil
-            movieListViewState.movies = []
-            fetchMovieList()
+            fetchMovieList(isNewLoad: true)
             return
         }
         
@@ -92,7 +90,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
             guard let self else { return }
             
             DispatchQueue.main.async {
-                self.fetchMovieSearch(with: query, isInitialSearch: true)
+                self.fetchMovieSearch(with: query, isNewSearch: true)
             }
         }
         
@@ -108,7 +106,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         }
         
         if let currentSearchQuery {
-            fetchMovieSearch(with: currentSearchQuery, isInitialSearch: false)
+            fetchMovieSearch(with: currentSearchQuery)
         } else {
             fetchMovieList()
         }
@@ -127,9 +125,16 @@ final class DefaultMovieListPresenter: MovieListPresenter {
 }
 
 private extension DefaultMovieListPresenter {
-    func fetchMovieList(group: DispatchGroup? = nil) {
+    func fetchMovieList(
+        isNewLoad: Bool = false,
+        group: DispatchGroup? = nil
+    ) {
         isRequestLoading = true
         group?.enter()
+        
+        if isNewLoad {
+            movieListViewState.movies = []
+        }
         
         apiService.fetchMovieList(
             by: sortType,
@@ -144,8 +149,20 @@ private extension DefaultMovieListPresenter {
                 guard let result else {
                     return
                 }
-                movieList = result.results
+                lastMovieListResult = result.results
                 updateMovieListViewState(with: result.results)
+                
+            case .failure(let error as NetworkError):
+                switch error  {
+                case .noInternetConnection:
+                    if isInternetConnectionErrorAvailable {
+                        isInternetConnectionErrorAvailable = false
+                        view.showError(message: error.localizedDescription)
+                    }
+                default:
+                    view.showError(message: error.localizedDescription)
+                }
+                
             case .failure(let error):
                 view.showError(message: error.localizedDescription)
             }
@@ -155,11 +172,11 @@ private extension DefaultMovieListPresenter {
     
     func fetchMovieSearch(
         with query: String,
-        isInitialSearch: Bool
+        isNewSearch: Bool = false
     ) {
         isRequestLoading = true
         
-        if isInitialSearch {
+        if isNewSearch {
             movieListViewState.movies = []
             currentSearchQuery = query
         }
@@ -240,7 +257,7 @@ private extension DefaultMovieListPresenter {
         requestsGroup.notify(queue: .main) { [weak self] in
             guard let self else { return }
             
-            updateMovieListViewState(with: movieList)
+            updateMovieListViewState(with: lastMovieListResult)
             view.hideLoadingAnimation()
         }
     }
