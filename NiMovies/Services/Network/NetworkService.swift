@@ -23,6 +23,11 @@ final class DefaultNetworkService: NetworkService {
         endpoint: T,
         completion: @escaping (Result<T.ResponseType?, Error>) -> Void
     ) {
+        guard NetworkReachabilityService.isConnectedToInternet else {
+            completion(.failure(NetworkError.noInternetConnection))
+            return
+        }
+        
         guard let url = endpoint.url else {
             completion(.failure(NetworkError.noInternetConnection))
             return

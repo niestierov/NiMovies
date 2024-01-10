@@ -34,6 +34,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     private unowned var view: MovieListView
     private let apiService: MovieListApiService
     private var moviesGenreList: [MovieGenre] = []
+    private var movieList: [MovieResult] = []
     private var movieListViewState = MovieListViewState()
     private(set) var sortType: MovieListSortType = .popularityDescending
     private var searchWorkItem: DispatchWorkItem?
@@ -42,13 +43,8 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     private var currentPage: Int {
         movieListViewState.movies.count / Constant.itemsForPageValue + Constant.initialFetchPage
     }
-    private var lastInternetConnectionUpdate = Date()
-    private var internetConnectionUpdateTimer: Timer?
-    private var isInternetConnectionErrorIsAvailable = true
-    private lazy var isConnectedToInternet: Bool = {
-        return NetworkReachabilityService.isConnectedToInternet
-    }()
-
+    private let requestsGroup = DispatchGroup()
+    //private var isInternetConnectionErrorAvailable = true
     
     // MARK: - Init -
     
@@ -111,14 +107,6 @@ final class DefaultMovieListPresenter: MovieListPresenter {
             return
         }
         
-        guard updateInternetConnectionStatus() else {
-            if isInternetConnectionErrorIsAvailable {
-                isInternetConnectionErrorIsAvailable = false
-                view.showNoInternetConnectionError()
-            }
-            return
-        }
-        
         if let currentSearchQuery {
             fetchMovieSearch(with: currentSearchQuery, isInitialSearch: false)
         } else {
@@ -139,8 +127,9 @@ final class DefaultMovieListPresenter: MovieListPresenter {
 }
 
 private extension DefaultMovieListPresenter {
-    func fetchMovieList(completion: (([MovieResult]) -> Void)? = nil) {
+    func fetchMovieList(group: DispatchGroup? = nil) {
         isRequestLoading = true
+        group?.enter()
         
         apiService.fetchMovieList(
             by: sortType,
@@ -155,14 +144,12 @@ private extension DefaultMovieListPresenter {
                 guard let result else {
                     return
                 }
-                if let completion {
-                    completion(result.results)
-                } else {
-                    updateMovieListViewState(with: result.results)
-                }
+                movieList = result.results
+                updateMovieListViewState(with: result.results)
             case .failure(let error):
                 view.showError(message: error.localizedDescription)
             }
+            group?.leave()
         }
     }
     
@@ -191,13 +178,16 @@ private extension DefaultMovieListPresenter {
                     return
                 }
                 updateMovieListViewState(with: result.results)
+                
             case .failure(let error):
                 view.showError(message: error.localizedDescription)
             }
         }
     }
     
-    func fetchMoviesGenreList(completion: ((Result<[MovieGenre], Error>) -> Void)? = nil) {
+    func fetchMoviesGenreList(group: DispatchGroup? = nil) {
+        group?.enter()
+        
         apiService.fetchMoviesGenreList { [weak self] response in
             guard let self else { return }
             
@@ -208,15 +198,11 @@ private extension DefaultMovieListPresenter {
                     return
                 }
                 moviesGenreList = result.genres
-                completion?(.success(result.genres))
                 
             case .failure(let error):
-                if let completion {
-                    completion(.failure(error))
-                } else {
-                    view.showError(message: error.localizedDescription)
-                }
+                view.showError(message: error.localizedDescription)
             }
+            group?.leave()
         }
     }
     
@@ -239,76 +225,23 @@ private extension DefaultMovieListPresenter {
     }
     
     func initialLoadHandler() {
-        let group = DispatchGroup()
-        
-        group.enter()
-        view.showLoadingAnimation {
-            group.leave()
+        requestsGroup.enter()
+        view.showLoadingAnimation { [weak self] in
+            self?.requestsGroup.leave()
         }
         
-        if isConnectedToInternet {
-            group.enter()
-            
-            initialRequestsGroupHandler {
-                group.leave()
-            }
-        }
-
-        group.notify(queue: .main) { [weak self] in
+        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
             guard let self else { return }
             
-            view.hideLoadingAnimation()
-            
-            if !isConnectedToInternet {
-                view.showNoInternetConnectionError()
-            }
-        }
-    }
-    
-    func initialRequestsGroupHandler(completion: @escaping () -> Void) {
-        var movieListResult: [MovieResult] = []
-        let requestsGroup = DispatchGroup()
-        
-        let movieGenreListWorkItem = DispatchWorkItem { [weak self] in
-            self?.fetchMoviesGenreList() { _ in
-                requestsGroup.leave()
-            }
-        }
-       
-        let movieListWorkItem = DispatchWorkItem { [weak self] in
-            self?.fetchMovieList() { movieList in
-                movieListResult = movieList
-                requestsGroup.leave()
-            }
+            fetchMoviesGenreList(group: requestsGroup)
+            fetchMovieList(group: requestsGroup)
         }
         
-        requestsGroup.enter()
-        DispatchQueue.global(qos: .userInteractive).async(execute: movieGenreListWorkItem)
-        
-        requestsGroup.enter()
-        DispatchQueue.global(qos: .userInteractive).async(execute: movieListWorkItem)
-
         requestsGroup.notify(queue: .main) { [weak self] in
-            self?.updateMovieListViewState(with: movieListResult)
-            completion()
+            guard let self else { return }
+            
+            updateMovieListViewState(with: movieList)
+            view.hideLoadingAnimation()
         }
-    }
-    
-    @discardableResult
-    func updateInternetConnectionStatus() -> Bool {
-        let currentTime = Date()
-        let elapsedTime = currentTime.timeIntervalSince(lastInternetConnectionUpdate)
-
-        guard elapsedTime >= Constant.internetConnectionUpdateDelay else {
-            return isConnectedToInternet
-        }
-
-        lastInternetConnectionUpdate = currentTime
-        isConnectedToInternet = NetworkReachabilityService.isConnectedToInternet
-
-        if isConnectedToInternet {
-            isInternetConnectionErrorIsAvailable = true
-        }
-        return isConnectedToInternet
     }
 }

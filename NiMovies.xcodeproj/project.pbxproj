@@ -64,7 +64,6 @@
 		9AF218AA2B4D6D0F00B1AA9B /* UITableView+Reusable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF218A92B4D6D0F00B1AA9B /* UITableView+Reusable.swift */; };
 		9AFBCDD22B48321400A2367D /* UIAlertAction+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AFBCDD12B48321400A2367D /* UIAlertAction+Extension.swift */; };
 		9AFBCDD42B4832BE00A2367D /* AppConstant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AFBCDD32B4832BE00A2367D /* AppConstant.swift */; };
-		9AFBCDD62B483A5400A2367D /* UIApplication+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AFBCDD52B483A5400A2367D /* UIApplication+Extension.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -124,7 +123,6 @@
 		9AF218A92B4D6D0F00B1AA9B /* UITableView+Reusable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableView+Reusable.swift"; sourceTree = "<group>"; };
 		9AFBCDD12B48321400A2367D /* UIAlertAction+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIAlertAction+Extension.swift"; sourceTree = "<group>"; };
 		9AFBCDD32B4832BE00A2367D /* AppConstant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstant.swift; sourceTree = "<group>"; };
-		9AFBCDD52B483A5400A2367D /* UIApplication+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+Extension.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -212,7 +210,6 @@
 				9A09B6F72B440383003668B7 /* JSONDecoder+Default.swift */,
 				9AC7EC0E2B44A12D00014E97 /* StringConvertible+Extension.swift */,
 				9AFBCDD12B48321400A2367D /* UIAlertAction+Extension.swift */,
-				9AFBCDD52B483A5400A2367D /* UIApplication+Extension.swift */,
 				9AF218A92B4D6D0F00B1AA9B /* UITableView+Reusable.swift */,
 				9A4836AB2B4E9CB800D97E7B /* Optional+Extension.swift */,
 			);
@@ -658,7 +655,6 @@
 				9A09B71B2B44436C003668B7 /* UIImageView+ImageService.swift in Sources */,
 				9A86F0352B49E176008E8881 /* MovieVideoResult.swift in Sources */,
 				9A09B7192B444356003668B7 /* UICollectionView+Reusable.swift in Sources */,
-				9AFBCDD62B483A5400A2367D /* UIApplication+Extension.swift in Sources */,
 				9A09B6EA2B440181003668B7 /* AppConfiguration.swift in Sources */,
 				9A09B70D2B44425C003668B7 /* MovieListPresenter.swift in Sources */,
 				9A09B6C12B43FB74003668B7 /* SceneDelegate.swift in Sources */,

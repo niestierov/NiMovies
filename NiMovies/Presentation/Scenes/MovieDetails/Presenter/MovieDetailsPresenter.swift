@@ -88,6 +88,8 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
 
 private extension DefaultMovieDetailsPresenter {
     func fetchMovieDetails(group: DispatchGroup? = nil) {
+        group?.enter()
+        
         apiService.fetchMovieDetails(movieId: configuration.id) { [weak self] response in
             guard let self else { return }
             
@@ -106,6 +108,8 @@ private extension DefaultMovieDetailsPresenter {
     }
     
     func fetchMovieVideos(group: DispatchGroup? = nil) {
+        group?.enter()
+        
         apiService.fetchMovieVideos(movieId: configuration.id) { [weak self] response in
             guard let self else { return }
             
@@ -152,10 +156,7 @@ private extension DefaultMovieDetailsPresenter {
         DispatchQueue.global().async { [weak self] in
             guard let self else { return }
             
-            requestGroup.enter()
             fetchMovieDetails(group: requestGroup)
-            
-            requestGroup.enter()
             fetchMovieVideos(group: requestGroup)
             
             requestGroup.notify(queue: .main) { [weak self] in

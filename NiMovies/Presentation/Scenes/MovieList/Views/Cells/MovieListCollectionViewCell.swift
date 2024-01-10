@@ -11,6 +11,13 @@ final class MovieListCollectionViewCell: UICollectionViewCell {
     private struct Constant {
         static let defaultInset: CGFloat = 15
         static let cornerRadius: CGFloat = 10
+        static let defaultTextSize: CGFloat = 18
+        static let gradientLayerColors = [
+            UIColor.black.withAlphaComponent(0.7).cgColor,
+            UIColor.black.withAlphaComponent(0.1).cgColor,
+            UIColor.black.withAlphaComponent(0.1).cgColor,
+            UIColor.black.withAlphaComponent(0.7).cgColor
+        ]
     }
     
     // MARK: - UI Components -
@@ -27,7 +34,7 @@ final class MovieListCollectionViewCell: UICollectionViewCell {
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 2
-        label.font = .systemFont(ofSize: 18, weight: .medium)
+        label.font = .systemFont(ofSize: Constant.defaultTextSize, weight: .medium)
         label.textColor = .white
         label.applyShadow(color: UIColor.black.cgColor, radius: 0.6)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -45,7 +52,7 @@ final class MovieListCollectionViewCell: UICollectionViewCell {
     
     private lazy var genresLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 18, weight: .light)
+        label.font = .systemFont(ofSize: Constant.defaultTextSize, weight: .light)
         label.textColor = .white
         label.applyShadow(color: UIColor.black.cgColor, radius: 0.6)
         label.applyPriority(
@@ -58,7 +65,7 @@ final class MovieListCollectionViewCell: UICollectionViewCell {
     
     private lazy var ratingLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 18, weight: .light)
+        label.font = .systemFont(ofSize: Constant.defaultTextSize, weight: .light)
         label.textColor = .white
         label.applyShadow(color: UIColor.black.cgColor, radius: 0.5)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -68,12 +75,7 @@ final class MovieListCollectionViewCell: UICollectionViewCell {
     private lazy var gradientLayer: CAGradientLayer = {
         let gradientLayer = CAGradientLayer()
         gradientLayer.frame = posterImageView.bounds
-        gradientLayer.colors = [
-            UIColor.black.withAlphaComponent(0.7).cgColor,
-            UIColor.black.withAlphaComponent(0.1).cgColor,
-            UIColor.black.withAlphaComponent(0.1).cgColor,
-            UIColor.black.withAlphaComponent(0.7).cgColor
-        ]
+        gradientLayer.colors = Constant.gradientLayerColors
         gradientLayer.locations = [0, 0.3, 0.7, 1]
         return gradientLayer
     }()

@@ -12,9 +12,7 @@ protocol MovieListView: AnyObject {
     func update(with indexPaths: [IndexPath])
     func showError(message: String?)
     func showLoadingAnimation(completion: EmptyBlock?)
-    func continueLoadingAnimation()
     func hideLoadingAnimation()
-    func showNoInternetConnectionError()
     func updateRequestStartedState()
     func updateRequestEndedState()
 }
@@ -201,25 +199,6 @@ private extension MovieListViewController {
      
      func hideLoadingAnimation() {
          loadingAnimationView.hide()
-     }
-     
-     func continueLoadingAnimation() {
-         loadingAnimationView.continueWithLoop()
-     }
-     
-     func showNoInternetConnectionError() {
-         let openAppSettingAction = AlertButtonAction(
-             title: "Open settings",
-             style: .default
-         ) {
-             UIApplication.openAppSettings()
-         }
-         let continueWithoutInternet = AlertButtonAction.default()
-         
-         showAlert(
-             message: AppConstant.noInternetConnectionErrorMessage,
-             actions: [openAppSettingAction, continueWithoutInternet]
-         )
      }
      
      func updateRequestStartedState() {
