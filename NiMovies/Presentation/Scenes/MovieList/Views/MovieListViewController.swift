@@ -26,15 +26,15 @@ final class MovieListViewController: UIViewController, Alert {
         static let titleName = "Popular Movies"
         static let sectionInterGroupSpacing: CGFloat = 15
         static let movieItemHeight: CGFloat = 200
+        static let paginationValueUntilLoad = 3
     }
     
     // MARK: - Properties -
     
     private var presenter: MovieListPresenter!
+    private var loadingAnimationView: LoadingAnimationView!
     
     // MARK: - UI Components -
-    
-    private var loadingAnimationView: LoadingAnimationView!
     
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController()
@@ -97,6 +97,16 @@ final class MovieListViewController: UIViewController, Alert {
         alertController.addAction(UIAlertAction.cancelAction())
         return alertController
     }()
+    
+    private lazy var backBarButtonItem: UIBarButtonItem = {
+        let button = UIBarButtonItem(
+            title: "",
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        return button
+    }()
 
     // MARK: - Life Cycle -
     
@@ -117,60 +127,17 @@ final class MovieListViewController: UIViewController, Alert {
         self.presenter = presenter
         self.loadingAnimationView = loadingAnimationView
     }
+    
+    private lazy var emptyViewStateLabel: UILabel = {
+        let label = UILabel()
+        label.isHidden = true
+        label.text = "No results found."
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
 }
-
-// MARK: - MovieListView -
-
-extension MovieListViewController: MovieListView {
-    func update(with indexPaths: [IndexPath]) {
-        collectionView.insertItems(at: indexPaths)
-    }
-    
-    func update() {
-        scrollToTop(animated: true)
-        collectionView.reloadData()
-    }
-    
-    func showError(message: String?) {
-        showAlert(message: message ?? AppConstant.defaultErrorMessage)
-    }
-    
-    func showLoadingAnimation(completion: EmptyBlock? = nil) {
-        loadingAnimationView.start(on: self, completion: completion)
-    }
-    
-    func hideLoadingAnimation() {
-        loadingAnimationView.hide()
-    }
-    
-    func continueLoadingAnimation() {
-        loadingAnimationView.continueWithLoop()
-    }
-    
-    func showNoInternetConnectionError() {
-        let openAppSettingAction = AlertButtonAction(
-            title: "Open settings",
-            style: .default
-        ) {
-            UIApplication.openAppSettings()
-        }
-        let continueWithoutInternet = AlertButtonAction.default()
-        
-        showAlert(
-            message: AppConstant.noInternetConnectionMessage,
-            actions: [openAppSettingAction, continueWithoutInternet]
-        )
-    }
-    
-    func updateRequestStartedState() {
-        collectionView.showActivityIndicator()
-    }
-    
-    func updateRequestEndedState() {
-        collectionView.hideActivityIndicator()
-    }
-}
-
+     
 // MARK: - Private -
 
 private extension MovieListViewController {
@@ -179,6 +146,7 @@ private extension MovieListViewController {
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.searchController = searchController
         navigationItem.rightBarButtonItem = sortButton
+        navigationItem.backBarButtonItem = backBarButtonItem
     }
     
     func setupView() {
@@ -208,6 +176,61 @@ private extension MovieListViewController {
         present(sortActionSheet, animated: true, completion: nil)
     }
 }
+     
+ // MARK: - MovieListView -
+
+ extension MovieListViewController: MovieListView {
+     func update(with indexPaths: [IndexPath]) {
+         collectionView.insertItems(at: indexPaths)
+     }
+     
+     func update() {
+         emptyViewStateLabel.isHidden = presenter.getMovieListCount() == .zero
+         
+         scrollToTop(animated: true)
+         collectionView.reloadData()
+     }
+     
+     func showError(message: String?) {
+         showAlert(message: message ?? AppConstant.defaultErrorMessage)
+     }
+     
+     func showLoadingAnimation(completion: EmptyBlock? = nil) {
+         loadingAnimationView.start(on: self, completion: completion)
+     }
+     
+     func hideLoadingAnimation() {
+         loadingAnimationView.hide()
+     }
+     
+     func continueLoadingAnimation() {
+         loadingAnimationView.continueWithLoop()
+     }
+     
+     func showNoInternetConnectionError() {
+         let openAppSettingAction = AlertButtonAction(
+             title: "Open settings",
+             style: .default
+         ) {
+             UIApplication.openAppSettings()
+         }
+         let continueWithoutInternet = AlertButtonAction.default()
+         
+         showAlert(
+             message: AppConstant.noInternetConnectionErrorMessage,
+             actions: [openAppSettingAction, continueWithoutInternet]
+         )
+     }
+     
+     func updateRequestStartedState() {
+         collectionView.showActivityIndicator()
+     }
+     
+     func updateRequestEndedState() {
+         collectionView.hideActivityIndicator()
+     }
+ }
+
 
 // MARK: - UICollectionViewDelegate -
 
@@ -217,6 +240,23 @@ extension MovieListViewController: UICollectionViewDelegate {
         didSelectItemAt indexPath: IndexPath
     ) {
         presenter.didSelectMovie(at: indexPath.item)
+    }
+    
+    func collectionView(
+        _ collectionView: UICollectionView,
+        viewForSupplementaryElementOfKind kind: String,
+        at indexPath: IndexPath
+    ) -> UICollectionReusableView {
+        switch kind {
+        case UICollectionView.elementKindSectionFooter:
+            return collectionView.dequeue(
+                ofKind: kind,
+                viewType: MovieListFooterView.self,
+                for: indexPath
+            )
+        default:
+            return UICollectionReusableView()
+        }
     }
 }
 
@@ -243,23 +283,6 @@ extension MovieListViewController: UICollectionViewDataSource {
         cell.configure(with: movie)
         
         return cell
-    }
-    
-    func collectionView(
-        _ collectionView: UICollectionView,
-        viewForSupplementaryElementOfKind kind: String,
-        at indexPath: IndexPath
-    ) -> UICollectionReusableView {
-        switch kind {
-        case UICollectionView.elementKindSectionFooter:
-            return collectionView.dequeue(
-                ofKind: kind,
-                viewType: MovieListFooterView.self,
-                for: indexPath
-            )
-        default:
-            return UICollectionReusableView()
-        }
     }
 }
 
@@ -291,9 +314,11 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
             let item = createItem(height: .absolute(Constant.movieItemHeight))
             let group = createVerticalGroup(with: [item])
             let section = createSection(with: group)
+            
+            let footerHeight: CGFloat = presenter.getMovieListCount() == 0 ? 0 : 50
             let footer = createFooter(
                 ofKind: UICollectionView.elementKindSectionFooter,
-                height: .absolute(50)
+                height: .absolute(footerHeight)
             )
             
             section.orthogonalScrollingBehavior = .none
@@ -307,10 +332,13 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
             section.boundarySupplementaryItems = [footer]
             
             section.visibleItemsInvalidationHandler = { [weak self] (items, offset, env) -> Void in
-                guard let self, let indexPath = items.last?.indexPath else {
+                guard let self,
+                      let indexPath = items.last?.indexPath,
+                      indexPath.item >= presenter.getMovieListCount() - Constant.paginationValueUntilLoad else {
                     return
                 }
-                presenter.didScrollView(at: indexPath.row)
+                
+                presenter.loadMoreMovies()
             }
             return section
         }

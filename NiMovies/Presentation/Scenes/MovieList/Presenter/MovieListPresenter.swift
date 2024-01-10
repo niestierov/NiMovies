@@ -15,7 +15,7 @@ protocol MovieListPresenter {
     func getMovieListCount() -> Int
     func getMovie(at: Int) -> MovieListViewState.Movie?
     func searchMovies(query: String?)
-    func didScrollView(at index: Int)
+    func loadMoreMovies()
     func sortMovies(by sortType: MovieListSortType)
     func didSelectMovie(at index: Int)
 }
@@ -25,7 +25,6 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         static let internetConnectionUpdateDelay: TimeInterval = 5
         static let itemsForPageValue = 20
         static let initialFetchPage = 1
-        static let paginationValueUntilLoad = 5
         static let scrollToTopButtonScope = 6
     }
     
@@ -89,6 +88,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         guard let query, !query.isEmpty else {
             currentSearchQuery = nil
             movieListViewState.movies = []
+            fetchMovieList()
             return
         }
         
@@ -106,9 +106,8 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         )
     }
 
-    func didScrollView(at index: Int) {
-        guard index >= getMovieListCount() - Constant.paginationValueUntilLoad,
-              !isRequestLoading else {
+    func loadMoreMovies() {
+        guard !isRequestLoading else {
             return
         }
         
@@ -128,10 +127,14 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     }
     
     func didSelectMovie(at index: Int) {
-        guard let id = getMovie(at: index)?.id else {
+        guard let movie = getMovie(at: index) else {
             return
         }
-        router.showNiPostDetails(movieId: id)
+        let movieDetailsConfiguration = MovieDetailsConfiguration(
+            id: movie.id,
+            title: movie.title
+        )
+        router.showNiPostDetails(with: movieDetailsConfiguration)
     }
 }
 
@@ -219,15 +222,14 @@ private extension DefaultMovieListPresenter {
     
     func updateMovieListViewState(with movieList: [MovieResult]) {
         let isInitialUpdate = getMovieListCount() == .zero
-
         movieListViewState.appendMovieList(movieList, with: moviesGenreList)
 
         if isInitialUpdate {
             view.update()
-            return
+        } else {
+            let indexPaths = makeIndexPathsForNewMovieList(with: movieList)
+            view.update(with: indexPaths)
         }
-        let indexPaths = makeIndexPathsForNewMovieList(with: movieList)
-        view.update(with: indexPaths)
     }
     
     func makeIndexPathsForNewMovieList(with newMovieList: [MovieResult]) -> [IndexPath] {

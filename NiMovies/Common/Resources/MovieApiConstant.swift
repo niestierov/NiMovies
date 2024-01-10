@@ -1,5 +1,5 @@
 //
-//  MovieConfiguration.swift
+//  MovieApiConstant.swift
 //  NiMovies
 //
 //  Created by Denys Niestierov on 02.01.2024.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct MovieConfiguration {
+struct MovieApiConstant {
     static let baseUrl = "https://api.themoviedb.org/3"
     static let basePosterUrl = "https://image.tmdb.org/t/p/w500"
     static let apiSecretKey = "API_KEY_THEMOVIEDB"

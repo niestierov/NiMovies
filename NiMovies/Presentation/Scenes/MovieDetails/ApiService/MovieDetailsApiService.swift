@@ -61,40 +61,39 @@ final class DefaultMovieDetailsApiService: MovieDetailsApiService {
 
 // MARK: - MovieDetailsEndpoint -
 
-extension DefaultMovieDetailsApiService {
-    fileprivate enum MovieDetailsEndpoint {
-        case details(movieId: Int)
-        case videos(movieId: Int)
-        
-        private var path: String {
-            let basePath = "/movie/"
-            switch self {
-            case .details(let movieId):
-                return basePath + movieId.stringValue
-            case .videos(let movieId):
-                return basePath + movieId.stringValue + "/videos"
-            }
-        }
-        
-        var parameters: [String: Any] {
-            let baseParameters: [String: Any] = [
-                MovieConfiguration.apiKey: MovieConfiguration.getSecretKey()
-            ]
-            
-            switch self {
-            case .details, .videos:
-                break
-            }
-            return baseParameters
-        }
-        
-        var url: URL? {
-            let urlString = MovieConfiguration.baseUrl + path
-            
-            guard let url = URL(string: urlString) else {
-                return nil
-            }
-            return url
+fileprivate enum MovieDetailsEndpoint {
+    case details(movieId: Int)
+    case videos(movieId: Int)
+    
+    private var path: String {
+        let basePath = "/movie/"
+        switch self {
+        case .details(let movieId):
+            return basePath + movieId.stringValue
+        case .videos(let movieId):
+            return basePath + movieId.stringValue + "/videos"
         }
     }
+    
+    var parameters: [String: Any] {
+        let baseParameters: [String: Any] = [
+            MovieApiConstant.apiKey: MovieApiConstant.getSecretKey()
+        ]
+        
+        switch self {
+        case .details, .videos:
+            break
+        }
+        return baseParameters
+    }
+    
+    var url: URL? {
+        let urlString = MovieApiConstant.baseUrl + path
+        
+        guard let url = URL(string: urlString) else {
+            return nil
+        }
+        return url
+    }
 }
+

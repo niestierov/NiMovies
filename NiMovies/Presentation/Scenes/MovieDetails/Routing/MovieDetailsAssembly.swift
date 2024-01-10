@@ -8,14 +8,14 @@
 import Foundation
 
 protocol MovieDetailsAssembly {
-    func createMovieDetails(movieId: Int) -> MovieDetailsViewController
+    func createMovieDetails(with configuration: MovieDetailsConfiguration) -> MovieDetailsViewController
 }
 
 final class DefaultMovieDetailsAssembly: MovieDetailsAssembly {
     
     // MARK: - Internal -
     
-    func createMovieDetails(movieId: Int) -> MovieDetailsViewController {
+    func createMovieDetails(with configuration: MovieDetailsConfiguration) -> MovieDetailsViewController {
         let networkService: NetworkService = ServiceLocator.shared.resolve()
         let apiService: MovieDetailsApiService = DefaultMovieDetailsApiService(networkService: networkService)
         let imageScreenView: ImageScreenView = ImageScreenViewController()
@@ -25,7 +25,7 @@ final class DefaultMovieDetailsAssembly: MovieDetailsAssembly {
         let presenter = DefaultMovieDetailsPresenter(
             view: viewController,
             apiService: apiService,
-            movieId: movieId
+            configuration: configuration
         )
         
         viewController.inject(

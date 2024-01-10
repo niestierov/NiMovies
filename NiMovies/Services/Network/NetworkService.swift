@@ -24,7 +24,7 @@ final class DefaultNetworkService: NetworkService {
         completion: @escaping (Result<T.ResponseType?, Error>) -> Void
     ) {
         guard let url = endpoint.url else {
-            completion(.failure(NetworkError.invalidUrl))
+            completion(.failure(NetworkError.noInternetConnection))
             return
         }
         
@@ -37,6 +37,11 @@ final class DefaultNetworkService: NetworkService {
             of: T.ResponseType.self,
             decoder: JSONDecoder.default
         ) { response in
+            guard NetworkReachabilityService.isConnectedToInternet else {
+                completion(.failure(NetworkError.noInternetConnection))
+                return
+            }
+            
             guard response.data != nil else {
                 completion(.failure(NetworkError.invalidData))
                 return
@@ -53,15 +58,16 @@ final class DefaultNetworkService: NetworkService {
 }
 
 enum NetworkError: Error, LocalizedError {
+    case noInternetConnection
     case invalidUrl
     case invalidData
     
     var errorDescription: String? {
         switch self {
-        case .invalidUrl:
-            AppConstant.defaultErrorMessage + "The URL is invalid."
-        case .invalidData:
-            AppConstant.defaultErrorMessage + "The received data is invalid."
+        case .invalidUrl, .invalidData:
+            AppConstant.defaultErrorMessage
+        case .noInternetConnection:
+            AppConstant.noInternetConnectionErrorMessage
         }
     }
 }
