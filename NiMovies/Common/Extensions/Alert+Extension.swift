@@ -36,7 +36,9 @@ extension Alert {
             alertController.addAction(alertAction)
         }
         
-        present(alertController, animated: true, completion: nil)
+        DispatchQueue.main.async {
+            self.present(alertController, animated: true, completion: nil)
+        }
     }
 }
 

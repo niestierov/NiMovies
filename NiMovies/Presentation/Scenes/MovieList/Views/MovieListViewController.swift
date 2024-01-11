@@ -110,20 +110,9 @@ final class MovieListViewController: UIViewController, Alert {
     
     private lazy var collectionEmptyView: MovieListEmtpyStateView = {
         let view = MovieListEmtpyStateView()
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
-    private lazy var titleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Nothing found."
-        label.textColor = .darkGray
-        label.textAlignment = .center
-        label.font = .systemFont(ofSize: 16, weight: .light)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-
     // MARK: - Life Cycle -
     
     override func viewDidLoad() {
@@ -319,12 +308,7 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
             let group = createVerticalGroup(with: [item])
             let section = createSection(with: group)
             
-            let footerHeight: CGFloat = presenter.getMovieListCount() == .zero ? .zero : 50
-            let footer = createFooter(
-                ofKind: UICollectionView.elementKindSectionFooter,
-                height: .absolute(footerHeight)
-            )
-            section.boundarySupplementaryItems = [footer]
+            addFooterIfNeeded(for: section)
             
             section.orthogonalScrollingBehavior = .none
             section.contentInsets = NSDirectionalEdgeInsets(
@@ -337,5 +321,16 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
             return section
         }
         return layout
+    }
+    
+    private func addFooterIfNeeded(for section: NSCollectionLayoutSection) {
+        if presenter.getMovieListCount() != .zero {
+            let footerHeight: CGFloat = presenter.getMovieListCount() == .zero ? .zero : 50
+            let footer = createFooter(
+                ofKind: UICollectionView.elementKindSectionFooter,
+                height: .absolute(footerHeight)
+            )
+            section.boundarySupplementaryItems = [footer]
+        }
     }
 }

@@ -13,9 +13,9 @@ final class MovieListEmtpyStateView: UIView {
     
     private lazy var stackView: UIStackView = {
         let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 15
-        stackView.backgroundColor = .blue
+        stackView.axis = .vertical
+        stackView.spacing = 10
+        stackView.alignment = .center
         stackView.distribution = .fill
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
@@ -25,17 +25,17 @@ final class MovieListEmtpyStateView: UIView {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.backgroundColor = .clear
-        imageView.tintColor = .darkGray
+        imageView.image = UIImage(named: AppConstant.noResultsImagePlaceholderName)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
 
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Nothing found."
-        label.textColor = .darkGray
+        label.text = "No results found."
+        label.textColor = .black
         label.textAlignment = .center
-        label.font = .systemFont(ofSize: 16, weight: .light)
+        label.font = .systemFont(ofSize: 20, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -65,26 +65,18 @@ final class MovieListEmtpyStateView: UIView {
 
 private extension MovieListEmtpyStateView {
     func setupView() {
-        backgroundColor = .red
+        backgroundColor = .clear
         
-        addSubview(titleLabel)
+        addSubview(stackView)
         
-        //stackView.addArrangedSubview(imageView)
-        //stackView.addArrangedSubview(titleLabel)
-        print(self.bounds.width)
-        layoutIfNeeded()
-        print(self.bounds.width)
+        stackView.addArrangedSubview(imageView)
+        stackView.addArrangedSubview(titleLabel)
+
         NSLayoutConstraint.activate([
-            titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            titleLabel.widthAnchor.constraint(equalTo: widthAnchor),
-//            stackView.topAnchor.constraint(equalTo: topAnchor),
-//            stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
-//            stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
-//            stackView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            stackView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            stackView.centerYAnchor.constraint(equalTo: centerYAnchor,  constant: -60),
             
-            //imageView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 1/6),
-            //imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor)
+            imageView.heightAnchor.constraint(equalTo: widthAnchor, multiplier: 1/2),
         ])
     }
 }

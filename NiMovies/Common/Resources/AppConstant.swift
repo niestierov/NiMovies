@@ -15,4 +15,5 @@ struct AppConstant {
     static let moviePosterPlaceholderName = "MoviePosterPlaceholder"
     static let defaultErrorMessage = "Something went wrong..."
     static let noInternetConnectionErrorMessage = "You are offline. Please, enable your WiFi or connect using cellular data."
+    static let noResultsImagePlaceholderName = "NoResultsImagePlaceholder"
 }

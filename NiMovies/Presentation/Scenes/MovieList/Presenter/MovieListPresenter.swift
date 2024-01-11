@@ -69,6 +69,9 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     }
     
     func getMovie(at index: Int) -> MovieListViewState.Movie? {
+        guard index < movieListViewState.movies.count else {
+            return nil
+        }
         return movieListViewState.movies[index]
     }
     
@@ -129,16 +132,13 @@ private extension DefaultMovieListPresenter {
         isNewLoad: Bool = false,
         group: DispatchGroup? = nil
     ) {
-        isRequestLoading = true
         group?.enter()
-        
-        if isNewLoad {
-            movieListViewState.movies = []
-        }
-        
+        isRequestLoading = true
+        let requestPage = isNewLoad ? Constant.initialFetchPage : currentPage
+
         apiService.fetchMovieList(
             by: sortType,
-            for: currentPage
+            for: requestPage
         ) { [weak self] response in
             guard let self else { return }
             
@@ -148,6 +148,9 @@ private extension DefaultMovieListPresenter {
             case .success(let result):
                 guard let result else {
                     return
+                }
+                if isNewLoad {
+                    movieListViewState.movies = []
                 }
                 lastMovieListResult = result.results
                 updateMovieListViewState(with: result.results)
@@ -175,15 +178,11 @@ private extension DefaultMovieListPresenter {
         isNewSearch: Bool = false
     ) {
         isRequestLoading = true
-        
-        if isNewSearch {
-            movieListViewState.movies = []
-            currentSearchQuery = query
-        }
-        
+        let requestPage = isNewSearch ? Constant.initialFetchPage : currentPage
+
         apiService.fetchSearch(
             with: query,
-            for: currentPage
+            for: requestPage
         ) { [weak self] response in
             guard let self else { return }
             
@@ -194,6 +193,11 @@ private extension DefaultMovieListPresenter {
                 guard let result else {
                     return
                 }
+                if isNewSearch {
+                    movieListViewState.movies = []
+                    currentSearchQuery = query
+                }
+                lastMovieListResult = result.results
                 updateMovieListViewState(with: result.results)
                 
             case .failure(let error):
