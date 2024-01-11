@@ -109,7 +109,10 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         }
         
         if let currentSearchQuery {
-            fetchMovieSearch(with: currentSearchQuery)
+            let movieListCount = getMovieListCount()
+            if movieListCount == .zero || movieListCount >= Constant.itemsForPageValue {
+                fetchMovieSearch(with: currentSearchQuery)
+            }
         } else {
             fetchMovieList()
         }
@@ -210,7 +213,7 @@ private extension DefaultMovieListPresenter {
     ) {
         isRequestLoading = true
         let requestPage = isNewSearch ? Constant.initialFetchPage : currentPage
-        
+
         apiService.fetchSearch(
             with: query,
             for: requestPage
