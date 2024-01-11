@@ -20,8 +20,8 @@ final class MovieListViewController: UIViewController, Alert {
         static let sortButtonImageName = "arrow.up.and.down.text.horizontal"
         static let titleName = "Popular Movies"
         static let sectionInterGroupSpacing: CGFloat = 15
-        static let movieItemHeight: CGFloat = 200
-        static let paginationValueUntilLoad:CGFloat = movieItemHeight * 3
+        static let movieItemHeightMultiplier: CGFloat = 1 / 2
+        static let paginationValueUntilLoad: CGFloat = 350
         static let defaultSectionInset: CGFloat = 16
     }
     
@@ -296,7 +296,7 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
                 return nil
             }
             
-            let item = createItem(height: .absolute(Constant.movieItemHeight))
+            let item = createItem(height: .fractionalWidth(Constant.movieItemHeightMultiplier))
             let group = createVerticalGroup(with: [item])
             let section = createSection(with: group)
             
