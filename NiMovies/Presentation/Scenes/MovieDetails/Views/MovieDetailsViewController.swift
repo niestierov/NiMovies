@@ -48,8 +48,8 @@ final class MovieDetailsViewController: UIViewController, Alert {
         return movieDetailsHeader
     }()
     
-    private lazy var tableEmptyView: MovieListEmtpyStateView = {
-        let view = MovieListEmtpyStateView()
+    private lazy var tableEmptyView: EmtpyStateView = {
+        let view = EmtpyStateView()
         view.configure(title: AppConstant.defaultErrorMessage)
         return view
     }()
@@ -114,20 +114,25 @@ private extension MovieDetailsViewController {
         youTubePlayerView.showAndPlayVideo(with: videoKeys, on: self)
     }
     
-    func updateMovieDetailsHeaderView() {
-        let imageUrlString = presenter.getHeader()?.backdrop ?? ""
-        movieDetailsHeaderView.configure(image: imageUrlString)
+    func updateTableView() {
+        if presenter.getSectionCount() != .zero {
+            tableView.backgroundView = nil
+            
+            let imageUrlString = presenter.getHeader()?.backdrop ?? ""
+            movieDetailsHeaderView.configure(image: imageUrlString)
+            movieDetailsHeaderView.isHidden = false
+        }
     }
 }
 
 extension MovieDetailsViewController: MovieDetailsView {
-    func showError(message: String?) {
+    func showError(message: String? = nil) {
         showAlert(message: message ?? AppConstant.defaultErrorMessage)
     }
     
     func update(with title: String) {
         self.title = title
-        updateMovieDetailsHeaderView()
+        updateTableView()
         tableView.reloadData()
     }
 
@@ -147,13 +152,7 @@ extension MovieDetailsViewController: UITableViewDataSource {
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        let sectionCount = presenter.getSectionCount()
-        
-        if sectionCount != .zero {
-            tableView.backgroundView = nil
-            movieDetailsHeaderView.isHidden = false
-        }
-        return sectionCount
+        return presenter.getSectionCount()
     }
     
     func tableView(

@@ -1,5 +1,5 @@
 //
-//  MovieListEmtpyStateView.swift
+//  EmtpyStateView.swift
 //  NiMovies
 //
 //  Created by Denys Niestierov on 10.01.2024.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class MovieListEmtpyStateView: UIView {
+final class EmtpyStateView: UIView {
     
     // MARK: - UI Components -
     
@@ -69,7 +69,7 @@ final class MovieListEmtpyStateView: UIView {
 
 // MARK: - Private -
 
-private extension MovieListEmtpyStateView {
+private extension EmtpyStateView {
     func setupView() {
         backgroundColor = .clear
         

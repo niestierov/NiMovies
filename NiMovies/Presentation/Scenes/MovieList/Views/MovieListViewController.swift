@@ -13,13 +13,10 @@ protocol MovieListView: AnyObject {
     func showError(message: String?)
     func showLoadingAnimation(completion: EmptyBlock?)
     func hideLoadingAnimation()
-    func updateRequestStartedState()
-    func updateRequestEndedState()
 }
 
 final class MovieListViewController: UIViewController, Alert {
     private struct Constant {
-        static let sortButtonTitle = "Sort By"
         static let sortButtonImageName = "arrow.up.and.down.text.horizontal"
         static let titleName = "Popular Movies"
         static let sectionInterGroupSpacing: CGFloat = 15
@@ -72,7 +69,7 @@ final class MovieListViewController: UIViewController, Alert {
     
     private lazy var sortActionSheet: UIAlertController = {
         let alertController = UIAlertController(
-            title: Constant.sortButtonTitle,
+            title: "Sort By",
             message: nil,
             preferredStyle: .actionSheet
         )
@@ -108,8 +105,8 @@ final class MovieListViewController: UIViewController, Alert {
         return button
     }()
     
-    private lazy var collectionEmptyView: MovieListEmtpyStateView = {
-        return MovieListEmtpyStateView()
+    private lazy var collectionEmptyView: EmtpyStateView = {
+        return EmtpyStateView()
     }()
     
     // MARK: - Life Cycle -
@@ -132,7 +129,7 @@ final class MovieListViewController: UIViewController, Alert {
         self.loadingAnimationView = loadingAnimationView
     }
 }
-     
+
 // MARK: - Private -
 
 private extension MovieListViewController {
@@ -157,10 +154,6 @@ private extension MovieListViewController {
         ])
     }
     
-    func scrollToTop(animated: Bool) {
-        collectionView.setContentOffset(.zero, animated: animated)
-    }
-    
     func addEmptyViewIfNeeded() {
         let isNeeded = presenter.getMovieListCount() == .zero
         collectionView.backgroundView = isNeeded ? collectionEmptyView : nil
@@ -176,7 +169,7 @@ private extension MovieListViewController {
 
  extension MovieListViewController: MovieListView {
      func update() {
-         scrollToTop(animated: true)
+         collectionView.setContentOffset(.zero, animated: true)
          addEmptyViewIfNeeded()
          
          collectionView.reloadData()
@@ -188,13 +181,12 @@ private extension MovieListViewController {
          let indexPaths = (currentItemsCount..<newItemsCount).map {
              IndexPath(item: $0, section: .zero)
          }
-         
          collectionView.performBatchUpdates {
              collectionView.insertItems(at: indexPaths)
          }
      }
      
-     func showError(message: String?) {
+     func showError(message: String? = nil) {
          showAlert(message: message ?? AppConstant.defaultErrorMessage)
      }
      
@@ -204,14 +196,6 @@ private extension MovieListViewController {
      
      func hideLoadingAnimation() {
          loadingAnimationView.hide()
-     }
-     
-     func updateRequestStartedState() {
-         collectionView.showActivityIndicator()
-     }
-     
-     func updateRequestEndedState() {
-         collectionView.hideActivityIndicator()
      }
  }
 
@@ -285,15 +269,15 @@ extension MovieListViewController: UICollectionViewDataSource {
 
 extension MovieListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        presenter.searchMovies(query: searchText)
+        presenter.performMovieSearch(query: searchText)
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        presenter.searchMovies(query: searchBar.text)
+        presenter.performMovieSearch(query: searchBar.text)
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        presenter.searchMovies(query: nil)
+        presenter.performMovieSearch(query: nil)
     }
 }
 
@@ -335,11 +319,12 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
     }
     
     private func addFooterIfNeeded(for section: NSCollectionLayoutSection) {
-        if presenter.getMovieListCount() != .zero {
-            let footerHeight: CGFloat = presenter.getMovieListCount() == .zero ? .zero : 50
+        let isConnectedToInternet = presenter.getInternetConnectionStatus()
+        
+        if presenter.getMovieListCount() != .zero && isConnectedToInternet {
             let footer = createFooter(
                 ofKind: UICollectionView.elementKindSectionFooter,
-                height: .absolute(footerHeight)
+                height: .absolute(50)
             )
             section.boundarySupplementaryItems = [footer]
         }

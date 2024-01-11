@@ -14,18 +14,17 @@ protocol MovieListPresenter {
     func initialLoad()
     func getMovieListCount() -> Int
     func getMovie(at: Int) -> MovieListViewState.Movie?
-    func searchMovies(query: String?)
+    func performMovieSearch(query: String?)
     func loadMoreMovies()
     func sortMovies(by sortType: MovieListSortType)
     func didSelectMovie(at index: Int)
+    func getInternetConnectionStatus() -> Bool
 }
 
 final class DefaultMovieListPresenter: MovieListPresenter {
     private struct Constant {
-        static let internetConnectionUpdateDelay: TimeInterval = 5
         static let itemsForPageValue = 20
         static let initialFetchPage = 1
-        static let scrollToTopButtonScope = 6
     }
     
     // MARK: - Properties -
@@ -33,18 +32,24 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     private let router: MovieListRouter
     private unowned var view: MovieListView
     private let apiService: MovieListApiService
-    private var moviesGenreList: [MovieGenre] = []
-    private var lastMovieListResult: [MovieResult] = []
-    private var movieListViewState = MovieListViewState()
-    private(set) var sortType: MovieListSortType = .popularityDescending
+    private lazy var moviesGenreList: [MovieGenre] = []
+    private lazy var lastMovieListResult: [MovieResult] = []
+    private lazy var movieListViewState = MovieListViewState()
+    private(set) lazy var sortType: MovieListSortType = .popularityDescending
+    private let requestsGroup = DispatchGroup()
     private var searchWorkItem: DispatchWorkItem?
     private var currentSearchQuery: String?
-    private var isRequestLoading = false
+    private lazy var isRequestLoading = false
+    private lazy var isInternetConnectionErrorAvailable = true
     private var currentPage: Int {
         movieListViewState.movies.count / Constant.itemsForPageValue + Constant.initialFetchPage
     }
-    private let requestsGroup = DispatchGroup()
-    private var isInternetConnectionErrorAvailable = true
+    private lazy var isConnectedToInternet = {
+        NetworkReachabilityService.isConnectedToInternet
+    }()
+    private lazy var defaultErrorHandler: ((Error) -> Void) = { [weak self] error in
+        self?.view.showError(message: error.localizedDescription)
+    }
     
     // MARK: - Init -
     
@@ -63,7 +68,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     func initialLoad() {
         initialLoadHandler()
     }
-
+    
     func getMovieListCount() -> Int {
         return movieListViewState.movies.count
     }
@@ -76,33 +81,27 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     }
     
     func sortMovies(by sortType: MovieListSortType) {
+        if !isConnectedToInternet {
+            defaultErrorHandler(NetworkError.noInternetConnection)
+            return
+        }
+        
         self.sortType = sortType
         fetchMovieList(isNewLoad: true)
     }
     
-    func searchMovies(query: String?) {
-        searchWorkItem?.cancel()
-        
-        guard let query, !query.isEmpty else {
-            currentSearchQuery = nil
-            fetchMovieList(isNewLoad: true)
-            return
-        }
-        
-        searchWorkItem = DispatchWorkItem { [weak self] in
-            guard let self else { return }
-            
-            DispatchQueue.main.async {
-                self.fetchMovieSearch(with: query, isNewSearch: true)
-            }
-        }
-        
-        DispatchQueue.global().asyncAfter(
-            deadline: .now() + 0.5,
-            execute: searchWorkItem!
-        )
+    func getInternetConnectionStatus() -> Bool {
+        isConnectedToInternet
     }
-
+    
+    func performMovieSearch(query: String?) {
+        if NetworkReachabilityService.isConnectedToInternet {
+            searchMovies(query: query)
+        } else {
+            searchMoviesLocally(query: query)
+        }
+    }
+    
     func loadMoreMovies() {
         guard !isRequestLoading else {
             return
@@ -127,15 +126,18 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     }
 }
 
+// MARK: - Private -
+
 private extension DefaultMovieListPresenter {
     func fetchMovieList(
         isNewLoad: Bool = false,
         group: DispatchGroup? = nil
     ) {
         group?.enter()
+        
         isRequestLoading = true
         let requestPage = isNewLoad ? Constant.initialFetchPage : currentPage
-
+        
         apiService.fetchMovieList(
             by: sortType,
             for: requestPage
@@ -146,32 +148,57 @@ private extension DefaultMovieListPresenter {
             
             switch response {
             case .success(let result):
-                guard let result else {
-                    return
-                }
+                lastMovieListResult = result?.results ?? []
+                
                 if isNewLoad {
                     movieListViewState.movies = []
+                    clearMovieModel()
                 }
-                lastMovieListResult = result.results
-                
                 if group == nil {
                     updateMovieListViewState(with: lastMovieListResult)
                 }
                 
-            case .failure(let error as NetworkError):
-                switch error  {
-                case .noInternetConnection:
-                    if isInternetConnectionErrorAvailable {
-                        isInternetConnectionErrorAvailable = false
-                        view.showError(message: error.localizedDescription)
-                    }
-                default:
-                    view.showError(message: error.localizedDescription)
-                }
+                updateMovieModel(with: lastMovieListResult)
                 
             case .failure(let error):
-                view.showError(message: error.localizedDescription)
+                handlFailureMovieListFetch(error: error)
             }
+            
+            group?.leave()
+        }
+    }
+    
+    func handlFailureMovieListFetch(error: Error) {
+        guard let networkError = error as? NetworkError else {
+            defaultErrorHandler(error)
+            return
+        }
+        
+        switch networkError  {
+        case .noInternetConnection:
+            if isInternetConnectionErrorAvailable {
+                isInternetConnectionErrorAvailable = false
+                defaultErrorHandler(error)
+            }
+        default:
+            defaultErrorHandler(error)
+        }
+    }
+    
+    func fetchMoviesGenreList(group: DispatchGroup? = nil) {
+        group?.enter()
+        
+        apiService.fetchMoviesGenreList { [weak self] response in
+            guard let self else { return }
+            
+            switch response {
+            case .success(let result):
+                moviesGenreList = result?.genres ?? []
+                updateMovieModel(with: moviesGenreList)
+            case .failure(let error):
+                defaultErrorHandler(error)
+            }
+            
             group?.leave()
         }
     }
@@ -182,7 +209,7 @@ private extension DefaultMovieListPresenter {
     ) {
         isRequestLoading = true
         let requestPage = isNewSearch ? Constant.initialFetchPage : currentPage
-
+        
         apiService.fetchSearch(
             with: query,
             for: requestPage
@@ -204,40 +231,63 @@ private extension DefaultMovieListPresenter {
                 updateMovieListViewState(with: result.results)
                 
             case .failure(let error):
-                view.showError(message: error.localizedDescription)
+                defaultErrorHandler(error)
             }
-        }
-    }
-    
-    func fetchMoviesGenreList(group: DispatchGroup? = nil) {
-        group?.enter()
-        
-        apiService.fetchMoviesGenreList { [weak self] response in
-            guard let self else { return }
-            
-            switch response {
-            case .success(let result):
-                guard let result,
-                      !result.genres.isEmpty else {
-                    return
-                }
-                moviesGenreList = result.genres
-                
-            case .failure(let error):
-                view.showError(message: error.localizedDescription)
-            }
-            group?.leave()
         }
     }
     
     func updateMovieListViewState(with movieList: [MovieResult]) {
         let isInitialUpdate = getMovieListCount() == .zero
         movieListViewState.appendMovieList(movieList, with: moviesGenreList)
-
+        
         if isInitialUpdate {
             view.update()
         } else {
             view.appendItems(movieList.count)
+        }
+    }
+    
+    func searchMovies(query: String?) {
+        searchWorkItem?.cancel()
+        
+        guard let query, !query.isEmpty else {
+            currentSearchQuery = nil
+            fetchMovieList(isNewLoad: true)
+            return
+        }
+        
+        searchWorkItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            
+            DispatchQueue.main.async {
+                self.fetchMovieSearch(with: query, isNewSearch: true)
+            }
+        }
+        
+        DispatchQueue.global().asyncAfter(
+            deadline: .now() + 0.5,
+            execute: searchWorkItem!
+        )
+    }
+    
+    func searchMoviesLocally(query: String?) {
+        movieListViewState.movies = []
+        
+        guard let query, !query.isEmpty else {
+            updateMovieListViewState(with: lastMovieListResult)
+            return
+        }
+        
+        DispatchQueue.global().async { [weak self] in
+            guard let self else { return }
+            
+            let filteredMovies = lastMovieListResult.filter {
+                return $0.title.localizedCaseInsensitiveContains(query)
+            }
+
+            DispatchQueue.main.async {
+                self.updateMovieListViewState(with: filteredMovies)
+            }
         }
     }
     
@@ -247,11 +297,26 @@ private extension DefaultMovieListPresenter {
             self?.requestsGroup.leave()
         }
         
-        DispatchQueue.global(qos: .userInteractive).async { [weak self] in
-            guard let self else { return }
+        if isConnectedToInternet {
+            DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+                guard let self else { return }
+                
+                fetchMoviesGenreList(group: requestsGroup)
+                fetchMovieList(isNewLoad: true, group: requestsGroup)
+            }
+        } else {
+            DefaultMovieModelManager.shared.performMovieGenresUpdate(
+                &moviesGenreList,
+                group: requestsGroup,
+                errorHandler: defaultErrorHandler
+            )
             
-            fetchMoviesGenreList(group: requestsGroup)
-            fetchMovieList(group: requestsGroup)
+            DefaultMovieModelManager.shared.performMovieListUpdate(
+                &lastMovieListResult,
+                group: requestsGroup,
+                errorHandler: defaultErrorHandler
+            )
+            isInternetConnectionErrorAvailable = false
         }
         
         requestsGroup.notify(queue: .main) { [weak self] in
@@ -259,6 +324,33 @@ private extension DefaultMovieListPresenter {
             
             updateMovieListViewState(with: lastMovieListResult)
             view.hideLoadingAnimation()
+            
+            if !isInternetConnectionErrorAvailable {
+                view.showError(message: AppConstant.noInternetConnectionErrorMessage)
+            }
         }
+    }
+    
+    func updateMovieModel<T>(with items: [T]) {
+        switch T.self {
+        case is MovieResult.Type:
+            DefaultMovieModelManager.shared.performModelUpdate(
+                with: lastMovieListResult,
+                errorHandler: defaultErrorHandler
+            )
+        case is MovieGenre.Type:
+            DefaultMovieModelManager.shared.performModelUpdate(
+                with: moviesGenreList,
+                errorHandler: defaultErrorHandler
+            )
+        default:
+            break
+        }
+    }
+    
+    func clearMovieModel() {
+        DefaultMovieModelManager.shared.removeMovieListItems(
+            errorHandler: defaultErrorHandler
+        )
     }
 }
