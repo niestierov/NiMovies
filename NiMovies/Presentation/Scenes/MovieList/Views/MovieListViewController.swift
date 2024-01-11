@@ -21,7 +21,7 @@ final class MovieListViewController: UIViewController, Alert {
         static let titleName = "Popular Movies"
         static let sectionInterGroupSpacing: CGFloat = 15
         static let movieItemHeight: CGFloat = 200
-        static let paginationValueUntilLoad = 3 //movieItemHeight * 3
+        static let paginationValueUntilLoad:CGFloat = movieItemHeight * 3
         static let defaultSectionInset: CGFloat = 16
     }
     
@@ -29,6 +29,7 @@ final class MovieListViewController: UIViewController, Alert {
     
     private var presenter: MovieListPresenter!
     private var loadingAnimationView: LoadingAnimationView!
+    private lazy var isTableViewUpdating = false
     
     // MARK: - UI Components -
     
@@ -171,8 +172,13 @@ private extension MovieListViewController {
      func update() {
          collectionView.setContentOffset(.zero, animated: true)
          addEmptyViewIfNeeded()
+         isTableViewUpdating = true
          
-         collectionView.reloadData()
+         UIView.animate(withDuration: .zero) {
+             self.collectionView.reloadData()
+         } completion: { _ in
+             self.isTableViewUpdating = false
+         }
      }
      
      func appendItems(_ itemsCount: Int) {
@@ -227,16 +233,16 @@ extension MovieListViewController: UICollectionViewDelegate {
         }
     }
     
-//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-//        let offsetY = scrollView.contentOffset.y
-//        let contentHeight = scrollView.contentSize.height
-//        let boundsHeight = scrollView.bounds.size.height
-//        let distanceFromBottom = contentHeight - offsetY - boundsHeight
-//
-//        if distanceFromBottom < Constant.paginationValueUntilLoad {
-//            self.presenter.loadMoreMovies()
-//        }
-//    }
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        let boundsHeight = scrollView.bounds.size.height
+        let distanceFromBottom = contentHeight - offsetY - boundsHeight
+
+        if distanceFromBottom < Constant.paginationValueUntilLoad && !isTableViewUpdating {
+            self.presenter.loadMoreMovies()
+        }
+    }
 }
 
 extension MovieListViewController: UICollectionViewDataSource {
@@ -304,15 +310,6 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
                 trailing: Constant.defaultSectionInset
             )
             section.interGroupSpacing = Constant.sectionInterGroupSpacing
-            section.visibleItemsInvalidationHandler = { [weak self] (items, offset, env) -> Void in
-                guard let self,
-                      let indexPath = items.last?.indexPath,
-                      indexPath.item > presenter.getMovieListCount() - Constant.paginationValueUntilLoad else {
-                    return
-                }
-
-                presenter.loadMoreMovies()
-            }
             return section
         }
         return layout
@@ -321,7 +318,8 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
     private func addFooterIfNeeded(for section: NSCollectionLayoutSection) {
         let isConnectedToInternet = presenter.getInternetConnectionStatus()
         
-        if presenter.getMovieListCount() != .zero && isConnectedToInternet {
+        if (presenter.isRequestLoading || .zero < presenter.getMovieListCount()) 
+            && isConnectedToInternet {
             let footer = createFooter(
                 ofKind: UICollectionView.elementKindSectionFooter,
                 height: .absolute(50)

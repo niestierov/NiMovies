@@ -10,6 +10,7 @@ import UIKit
 
 protocol MovieListPresenter {
     var sortType: MovieListSortType { get }
+    var isRequestLoading: Bool { get }
     
     func initialLoad()
     func getMovieListCount() -> Int
@@ -39,14 +40,14 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     private let requestsGroup = DispatchGroup()
     private var searchWorkItem: DispatchWorkItem?
     private var currentSearchQuery: String?
-    private lazy var isRequestLoading = false
+    private(set) lazy var isRequestLoading = false
     private lazy var isInternetConnectionErrorAvailable = true
+    private var isConnectedToInternet: Bool {
+        NetworkReachabilityService.isConnectedToInternet
+    }
     private var currentPage: Int {
         movieListViewState.movies.count / Constant.itemsForPageValue + Constant.initialFetchPage
     }
-    private lazy var isConnectedToInternet = {
-        NetworkReachabilityService.isConnectedToInternet
-    }()
     private lazy var defaultErrorHandler: ((Error) -> Void) = { [weak self] error in
         self?.view.showError(message: error.localizedDescription)
     }
@@ -80,6 +81,10 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         return movieListViewState.movies[index]
     }
     
+    func getInternetConnectionStatus() -> Bool {
+        isConnectedToInternet
+    }
+    
     func sortMovies(by sortType: MovieListSortType) {
         if !isConnectedToInternet {
             defaultErrorHandler(NetworkError.noInternetConnection)
@@ -90,12 +95,8 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         fetchMovieList(isNewLoad: true)
     }
     
-    func getInternetConnectionStatus() -> Bool {
-        isConnectedToInternet
-    }
-    
     func performMovieSearch(query: String?) {
-        if NetworkReachabilityService.isConnectedToInternet {
+        if isConnectedToInternet {
             searchMovies(query: query)
         } else {
             searchMoviesLocally(query: query)
