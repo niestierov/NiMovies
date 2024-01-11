@@ -317,9 +317,12 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
     
     private func addFooterIfNeeded(for section: NSCollectionLayoutSection) {
         let isConnectedToInternet = presenter.getInternetConnectionStatus()
-        
-        if (presenter.isRequestLoading || .zero < presenter.getMovieListCount()) 
-            && isConnectedToInternet {
+        let isLoading = presenter.isRequestLoading
+        let movieListCount = presenter.getMovieListCount()
+        let isRequestAvailable = presenter.isRequestAvailable()
+
+        if (isLoading || movieListCount > .zero)
+            && isConnectedToInternet && isRequestAvailable {
             let footer = createFooter(
                 ofKind: UICollectionView.elementKindSectionFooter,
                 height: .absolute(50)

@@ -8,6 +8,11 @@
 import Foundation
 import UIKit
 
+fileprivate struct RequestPrepareInfo {
+    let page: Int
+    let isPrepareToLoad: Bool
+}
+
 protocol MovieListPresenter {
     var sortType: MovieListSortType { get }
     var isRequestLoading: Bool { get }
@@ -20,6 +25,7 @@ protocol MovieListPresenter {
     func sortMovies(by sortType: MovieListSortType)
     func didSelectMovie(at index: Int)
     func getInternetConnectionStatus() -> Bool
+    func isRequestAvailable() -> Bool
 }
 
 final class DefaultMovieListPresenter: MovieListPresenter {
@@ -45,6 +51,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     private var isConnectedToInternet: Bool {
         NetworkReachabilityService.isConnectedToInternet
     }
+    private lazy var previousPage: Int = .zero
     private var currentPage: Int {
         movieListViewState.movies.count / Constant.itemsForPageValue + Constant.initialFetchPage
     }
@@ -85,11 +92,12 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         isConnectedToInternet
     }
     
+    func isRequestAvailable() -> Bool {
+        previousPage != currentPage
+    }
+    
     func sortMovies(by sortType: MovieListSortType) {
-        if !isConnectedToInternet {
-            defaultErrorHandler(NetworkError.noInternetConnection)
-            return
-        }
+        validateInternetConnection()
         
         self.sortType = sortType
         fetchMovieList(isNewLoad: true)
@@ -119,6 +127,8 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     }
     
     func didSelectMovie(at index: Int) {
+        validateInternetConnection()
+        
         guard let movie = getMovie(at: index) else {
             return
         }
@@ -138,13 +148,16 @@ private extension DefaultMovieListPresenter {
         group: DispatchGroup? = nil
     ) {
         group?.enter()
+        let requestPrepareInfo = prepareForRequest(isNewRequest: isNewLoad)
         
-        isRequestLoading = true
-        let requestPage = isNewLoad ? Constant.initialFetchPage : currentPage
+        guard requestPrepareInfo.isPrepareToLoad else {
+            group?.leave()
+            return
+        }
         
         apiService.fetchMovieList(
             by: sortType,
-            for: requestPage
+            for: requestPrepareInfo.page
         ) { [weak self] response in
             guard let self else { return }
             
@@ -211,12 +224,15 @@ private extension DefaultMovieListPresenter {
         with query: String,
         isNewSearch: Bool = false
     ) {
-        isRequestLoading = true
-        let requestPage = isNewSearch ? Constant.initialFetchPage : currentPage
-
+        let requestPrepareInfo = prepareForRequest(isNewRequest: isNewSearch)
+        
+        guard requestPrepareInfo.isPrepareToLoad else {
+            return
+        }
+        
         apiService.fetchSearch(
             with: query,
-            for: requestPage
+            for: requestPrepareInfo.page
         ) { [weak self] response in
             guard let self else { return }
             
@@ -292,6 +308,37 @@ private extension DefaultMovieListPresenter {
             DispatchQueue.main.async {
                 self.updateMovieListViewState(with: filteredMovies)
             }
+        }
+    }
+    
+    func prepareForRequest(isNewRequest: Bool) -> RequestPrepareInfo {
+        isRequestLoading = true
+        
+        if isNewRequest {
+            previousPage = .zero
+        }
+        let requestPage = isNewRequest ? Constant.initialFetchPage : currentPage
+        
+        guard isRequestAvailable() else {
+            isRequestLoading = false
+            
+            return RequestPrepareInfo(
+                page: requestPage,
+                isPrepareToLoad: false
+            )
+        }
+        
+        previousPage = requestPage
+        return RequestPrepareInfo(
+            page: requestPage,
+            isPrepareToLoad: true
+        )
+    }
+    
+    func validateInternetConnection() {
+        if !isConnectedToInternet {
+            defaultErrorHandler(NetworkError.noInternetConnection)
+            return
         }
     }
     
