@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9A0429BB2B5018330011BDC5 /* MovieModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 9A0429B92B5018320011BDC5 /* MovieModel.xcdatamodeld */; };
 		9A069D072B47055C0017CC7A /* UIView+ActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A069D062B47055C0017CC7A /* UIView+ActivityIndicator.swift */; };
 		9A09B6BF2B43FB74003668B7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B6BE2B43FB74003668B7 /* AppDelegate.swift */; };
 		9A09B6C12B43FB74003668B7 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B6C02B43FB74003668B7 /* SceneDelegate.swift */; };
@@ -68,6 +69,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9A0429BA2B5018320011BDC5 /* MovieModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MovieModel.xcdatamodel; sourceTree = "<group>"; };
 		9A069D062B47055C0017CC7A /* UIView+ActivityIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+ActivityIndicator.swift"; sourceTree = "<group>"; };
 		9A09B6BB2B43FB74003668B7 /* NiMovies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NiMovies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9A09B6BE2B43FB74003668B7 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -224,6 +226,7 @@
 				9A09B6C72B43FB75003668B7 /* Assets.xcassets */,
 				9AFBCDD32B4832BE00A2367D /* AppConstant.swift */,
 				9AC7EC102B44AFD100014E97 /* MovieApiConstant.swift */,
+				9A0429B92B5018320011BDC5 /* MovieModel.xcdatamodeld */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -648,6 +651,7 @@
 				9A09B6EF2B440230003668B7 /* BaseRouter.swift in Sources */,
 				9A09B71F2B44437A003668B7 /* Alert+Extension.swift in Sources */,
 				9A09B6F42B440316003668B7 /* Endpoint.swift in Sources */,
+				9A0429BB2B5018330011BDC5 /* MovieModel.xcdatamodeld in Sources */,
 				9A09B6F62B440335003668B7 /* Requestable.swift in Sources */,
 				9A7F28882B48BA4D004B2B64 /* MovieListSortType.swift in Sources */,
 				9AF09C822B498D3E00352535 /* MovieDetailsResult.swift in Sources */,
@@ -959,6 +963,19 @@
 			productName = YouTubeiOSPlayerHelper;
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		9A0429B92B5018320011BDC5 /* MovieModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				9A0429BA2B5018320011BDC5 /* MovieModel.xcdatamodel */,
+			);
+			currentVersion = 9A0429BA2B5018320011BDC5 /* MovieModel.xcdatamodel */;
+			path = MovieModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 9A09B6B32B43FB74003668B7 /* Project object */;
 }

@@ -9,7 +9,7 @@ import UIKit
 
 protocol MovieListView: AnyObject {
     func update()
-    func update(with indexPaths: [IndexPath])
+    func appendItems(_ itemsCount: Int)
     func showError(message: String?)
     func showLoadingAnimation(completion: EmptyBlock?)
     func hideLoadingAnimation()
@@ -19,12 +19,12 @@ protocol MovieListView: AnyObject {
 
 final class MovieListViewController: UIViewController, Alert {
     private struct Constant {
-        static let scrollToTopButtonImageName = "arrow.up"
+        static let sortButtonTitle = "Sort By"
         static let sortButtonImageName = "arrow.up.and.down.text.horizontal"
         static let titleName = "Popular Movies"
         static let sectionInterGroupSpacing: CGFloat = 15
         static let movieItemHeight: CGFloat = 200
-        static let paginationValueUntilLoad: CGFloat = movieItemHeight * 3
+        static let paginationValueUntilLoad = 3 //movieItemHeight * 3
         static let defaultSectionInset: CGFloat = 16
     }
     
@@ -72,7 +72,7 @@ final class MovieListViewController: UIViewController, Alert {
     
     private lazy var sortActionSheet: UIAlertController = {
         let alertController = UIAlertController(
-            title: "Sort By",
+            title: Constant.sortButtonTitle,
             message: nil,
             preferredStyle: .actionSheet
         )
@@ -109,8 +109,7 @@ final class MovieListViewController: UIViewController, Alert {
     }()
     
     private lazy var collectionEmptyView: MovieListEmtpyStateView = {
-        let view = MovieListEmtpyStateView()
-        return view
+        return MovieListEmtpyStateView()
     }()
     
     // MARK: - Life Cycle -
@@ -168,11 +167,6 @@ private extension MovieListViewController {
     }
     
     @objc
-    func didTapScrollToTop() {
-        scrollToTop(animated: true)
-    }
-    
-    @objc
     func didTapSortButton() {
         present(sortActionSheet, animated: true, completion: nil)
     }
@@ -181,15 +175,23 @@ private extension MovieListViewController {
  // MARK: - MovieListView -
 
  extension MovieListViewController: MovieListView {
-     func update(with indexPaths: [IndexPath]) {
-         collectionView.insertItems(at: indexPaths)
-     }
-     
      func update() {
          scrollToTop(animated: true)
          addEmptyViewIfNeeded()
          
          collectionView.reloadData()
+     }
+     
+     func appendItems(_ itemsCount: Int) {
+         let currentItemsCount = collectionView.numberOfItems(inSection: .zero)
+         let newItemsCount = currentItemsCount + itemsCount
+         let indexPaths = (currentItemsCount..<newItemsCount).map {
+             IndexPath(item: $0, section: .zero)
+         }
+         
+         collectionView.performBatchUpdates {
+             collectionView.insertItems(at: indexPaths)
+         }
      }
      
      func showError(message: String?) {
@@ -241,16 +243,16 @@ extension MovieListViewController: UICollectionViewDelegate {
         }
     }
     
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let offsetY = scrollView.contentOffset.y
-        let contentHeight = scrollView.contentSize.height
-        let boundsHeight = scrollView.bounds.size.height
-        let distanceFromBottom = contentHeight - offsetY - boundsHeight
-
-        if distanceFromBottom < Constant.paginationValueUntilLoad {
-            self.presenter.loadMoreMovies()
-        }
-    }
+//    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+//        let offsetY = scrollView.contentOffset.y
+//        let contentHeight = scrollView.contentSize.height
+//        let boundsHeight = scrollView.bounds.size.height
+//        let distanceFromBottom = contentHeight - offsetY - boundsHeight
+//
+//        if distanceFromBottom < Constant.paginationValueUntilLoad {
+//            self.presenter.loadMoreMovies()
+//        }
+//    }
 }
 
 extension MovieListViewController: UICollectionViewDataSource {
@@ -318,6 +320,15 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
                 trailing: Constant.defaultSectionInset
             )
             section.interGroupSpacing = Constant.sectionInterGroupSpacing
+            section.visibleItemsInvalidationHandler = { [weak self] (items, offset, env) -> Void in
+                guard let self,
+                      let indexPath = items.last?.indexPath,
+                      indexPath.item > presenter.getMovieListCount() - Constant.paginationValueUntilLoad else {
+                    return
+                }
+
+                presenter.loadMoreMovies()
+            }
             return section
         }
         return layout

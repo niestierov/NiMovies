@@ -19,6 +19,7 @@ final class MovieDetailsHeaderView: UIView {
             target: self,
             action: #selector(didTapImageView)
         )
+        imageView.backgroundColor = .clear
         imageView.addGestureRecognizer(tapGesture)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -26,7 +27,7 @@ final class MovieDetailsHeaderView: UIView {
     
     // MARK: - Properties -
     
-    var imageTapGestureHandler: EmptyBlock?
+    var imageViewTapGestureHandler: EmptyBlock?
 
     // MARK: - Init -
 
@@ -68,6 +69,6 @@ private extension MovieDetailsHeaderView {
     
     @objc
     func didTapImageView() {
-        imageTapGestureHandler?()
+        imageViewTapGestureHandler?()
     }
 }

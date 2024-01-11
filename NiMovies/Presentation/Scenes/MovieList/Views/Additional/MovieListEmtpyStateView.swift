@@ -59,6 +59,12 @@ final class MovieListEmtpyStateView: UIView {
         
         setupView()
     }
+    
+    // MARK: - Internal -
+    
+    func configure(title: String) {
+        self.titleLabel.text = title
+    }
 }
 
 // MARK: - Private -

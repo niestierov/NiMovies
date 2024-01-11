@@ -153,7 +153,10 @@ private extension DefaultMovieListPresenter {
                     movieListViewState.movies = []
                 }
                 lastMovieListResult = result.results
-                updateMovieListViewState(with: result.results)
+                
+                if group == nil {
+                    updateMovieListViewState(with: lastMovieListResult)
+                }
                 
             case .failure(let error as NetworkError):
                 switch error  {
@@ -234,15 +237,8 @@ private extension DefaultMovieListPresenter {
         if isInitialUpdate {
             view.update()
         } else {
-            let indexPaths = makeIndexPathsForNewMovieList(with: movieList)
-            view.update(with: indexPaths)
+            view.appendItems(movieList.count)
         }
-    }
-    
-    func makeIndexPathsForNewMovieList(with newMovieList: [MovieResult]) -> [IndexPath] {
-        let endIndex = getMovieListCount()
-        let startIndex = endIndex - newMovieList.count
-        return (startIndex..<endIndex).map { IndexPath(item: $0, section: .zero) }
     }
     
     func initialLoadHandler() {

@@ -29,6 +29,7 @@ final class MovieDetailsViewController: UIViewController, Alert {
         tableView.delegate = self
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
+        tableView.backgroundView = tableEmptyView
         tableView.tableHeaderView = movieDetailsHeaderView
         tableView.register(MovieDetailsAttributeTableViewCell.self)
         tableView.register(MovieDetailsTrailerTableViewCell.self)
@@ -39,11 +40,18 @@ final class MovieDetailsViewController: UIViewController, Alert {
     
     private lazy var movieDetailsHeaderView: MovieDetailsHeaderView = {
         let movieDetailsHeader = MovieDetailsHeaderView()
-        movieDetailsHeader.imageTapGestureHandler = { [weak self] in
+        movieDetailsHeader.imageViewTapGestureHandler = { [weak self] in
             self?.openZoomPosterScreen()
         }
+        movieDetailsHeader.isHidden = true
         movieDetailsHeader.translatesAutoresizingMaskIntoConstraints = false
         return movieDetailsHeader
+    }()
+    
+    private lazy var tableEmptyView: MovieListEmtpyStateView = {
+        let view = MovieListEmtpyStateView()
+        view.configure(title: AppConstant.defaultErrorMessage)
+        return view
     }()
     
     // MARK: - Life Cycle -
@@ -75,7 +83,8 @@ private extension MovieDetailsViewController {
         view.backgroundColor = .white
         
         view.addSubview(tableView)
-
+        tableView.tableHeaderView = movieDetailsHeaderView
+        
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -130,22 +139,21 @@ extension MovieDetailsViewController: MovieDetailsView {
 // MARK: - UITableViewDataSource -
 
 extension MovieDetailsViewController: UITableViewDataSource {
-    func numberOfSections(in tableView: UITableView) -> Int {
-        presenter.getSectionCount()
-    }
-    
     func tableView(
         _ tableView: UITableView,
         numberOfRowsInSection section: Int
     ) -> Int {
-        let section = presenter.getSection(by: section)
+        return 1
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        let sectionCount = presenter.getSectionCount()
         
-        switch section {
-        case .trailerItem:
-            return 1
-        case .attributeItem:
-            return 1
+        if sectionCount != .zero {
+            tableView.backgroundView = nil
+            movieDetailsHeaderView.isHidden = false
         }
+        return sectionCount
     }
     
     func tableView(
