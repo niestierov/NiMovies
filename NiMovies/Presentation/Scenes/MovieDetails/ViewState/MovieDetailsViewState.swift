@@ -41,7 +41,7 @@ struct MovieDetailsViewState {
     
     struct MovieDetailsHeader {
         let backdrop: String
-        let poster: String
+        let poster: String?
     }
     
     let title: String
@@ -103,7 +103,11 @@ extension MovieDetailsViewState {
         ]
         
         let backdropUrlString = MovieApiConstant.basePosterUrl + movieDetails.backdropPath.setDefaultIfNilOrEmpty()
-        let posterUrlString = MovieApiConstant.basePosterUrl + movieDetails.posterPath.setDefaultIfNilOrEmpty()
+        
+        var posterUrlString: String?
+        if let posterPath = movieDetails.posterPath {
+            posterUrlString = MovieApiConstant.basePosterUrl + posterPath
+        }
         
         let header = MovieDetailsHeader(
             backdrop: backdropUrlString,

@@ -97,7 +97,9 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     }
     
     func sortMovies(by sortType: MovieListSortType) {
-        validateInternetConnection()
+        guard validateInternetConnection() else {
+            return
+        }
         
         self.sortType = sortType
         fetchMovieList(isNewLoad: true)
@@ -127,7 +129,9 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     }
     
     func didSelectMovie(at index: Int) {
-        validateInternetConnection()
+        guard validateInternetConnection() else {
+            return
+        }
         
         guard let movie = getMovie(at: index) else {
             return
@@ -335,11 +339,13 @@ private extension DefaultMovieListPresenter {
         )
     }
     
-    func validateInternetConnection() {
+    @discardableResult
+    func validateInternetConnection() -> Bool {
         if !isConnectedToInternet {
             defaultErrorHandler(NetworkError.noInternetConnection)
-            return
+            return false
         }
+        return true
     }
     
     func initialLoadHandler() {

@@ -29,7 +29,6 @@ final class MovieDetailsViewController: UIViewController, Alert {
         tableView.delegate = self
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
-        tableView.backgroundView = tableEmptyView
         tableView.tableHeaderView = movieDetailsHeaderView
         tableView.register(MovieDetailsAttributeTableViewCell.self)
         tableView.register(MovieDetailsTrailerTableViewCell.self)
@@ -115,9 +114,10 @@ private extension MovieDetailsViewController {
     }
     
     func updateTableView() {
-        if presenter.getSectionCount() != .zero {
+        if presenter.getSectionCount() == .zero {
+            tableView.backgroundView = tableEmptyView
+        } else {
             tableView.backgroundView = nil
-            
             let imageUrlString = presenter.getHeader()?.backdrop ?? ""
             movieDetailsHeaderView.configure(image: imageUrlString)
             movieDetailsHeaderView.isHidden = false
@@ -131,9 +131,12 @@ extension MovieDetailsViewController: MovieDetailsView {
     }
     
     func update(with title: String) {
-        self.title = title
         updateTableView()
-        tableView.reloadData()
+        
+        UIView.animate(withDuration: 0) {
+            self.title = title
+            self.tableView.reloadData()
+        }
     }
 
     func showYouTubePlayer(with videoKeys: [String]) {
@@ -221,4 +224,16 @@ extension MovieDetailsViewController: UITableViewDelegate {
             return .zero
         }
     }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        let section = presenter.getSection(by: indexPath.section)
+        
+        switch section {
+        case .trailerItem(let item):
+            return item.cell.isTrailerAvailable ? UITableView.automaticDimension : .zero
+        case .attributeItem(_):
+            return UITableView.automaticDimension
+        }
+    }
+
 }

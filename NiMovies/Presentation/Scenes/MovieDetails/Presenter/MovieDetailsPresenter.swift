@@ -34,7 +34,7 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     private unowned let view: MovieDetailsView
     private let apiService: MovieDetailsApiService
     private let configuration: MovieDetailsConfiguration
-    private(set) var movieDetailsViewState: MovieDetailsViewState
+    private(set) lazy var movieDetailsViewState: MovieDetailsViewState = MovieDetailsViewState.makeInitialViewState(with: configuration)
     private let requestGroup = DispatchGroup()
     private var movieDetails: MovieDetailsResult?
     private var videoKeys: [String]?
@@ -49,8 +49,6 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
         self.view = view
         self.apiService = apiService
         self.configuration = configuration
-        
-        movieDetailsViewState = MovieDetailsViewState.makeInitialViewState(with: configuration)
     }
     
     // MARK: - Internal -
