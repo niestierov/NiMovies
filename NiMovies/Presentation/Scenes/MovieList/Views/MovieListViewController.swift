@@ -162,6 +162,9 @@ private extension MovieListViewController {
     
     @objc
     func didTapSortButton() {
+        if let popoverController = sortActionSheet.popoverPresentationController {
+            popoverController.barButtonItem = sortButton
+        }
         present(sortActionSheet, animated: true, completion: nil)
     }
 }
