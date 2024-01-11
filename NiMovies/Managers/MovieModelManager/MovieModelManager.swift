@@ -22,7 +22,7 @@ protocol MovieModelManager {
         group: DispatchGroup?,
         errorHandler: @escaping (Error) -> Void
     )
-    func removeMovieListItems(
+    func removeMovieItems(
         errorHandler: @escaping (Error) -> Void
     )
 }
@@ -41,7 +41,7 @@ final class DefaultMovieModelManager: MovieModelManager {
     
     // MARK: - Internal -
     
-    func removeMovieListItems(errorHandler: @escaping (Error) -> Void) {
+    func removeMovieItems(errorHandler: @escaping (Error) -> Void) {
         let fetchRequest = MovieItem.fetchRequest()
 
         do {
@@ -175,7 +175,7 @@ private extension DefaultMovieModelManager {
     func getMovieGenreModels() -> [MovieGenreItem]? {
         do {
             return try context.fetch(MovieGenreItem.fetchRequest())
-        } catch let error {
+        } catch {
             return nil
         }
     }

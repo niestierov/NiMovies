@@ -48,12 +48,12 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     private var currentSearchQuery: String?
     private(set) lazy var isRequestLoading = false
     private lazy var isInternetConnectionErrorAvailable = true
-    private var isConnectedToInternet: Bool {
-        NetworkReachabilityService.isConnectedToInternet
-    }
     private lazy var previousPage: Int = .zero
     private var currentPage: Int {
         movieListViewState.movies.count / Constant.itemsForPageValue + Constant.initialFetchPage
+    }
+    private var isConnectedToInternet: Bool {
+        NetworkReachabilityService.isConnectedToInternet
     }
     private lazy var defaultErrorHandler: ((Error) -> Void) = { [weak self] error in
         self?.view.showError(message: error.localizedDescription)
@@ -132,10 +132,10 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         guard validateInternetConnection() else {
             return
         }
-        
         guard let movie = getMovie(at: index) else {
             return
         }
+        
         let movieDetailsConfiguration = MovieDetailsConfiguration(
             id: movie.id,
             title: movie.title
@@ -178,7 +178,6 @@ private extension DefaultMovieListPresenter {
                 if group == nil {
                     updateMovieListViewState(with: lastMovieListResult)
                 }
-                
                 updateMovieModel(with: lastMovieListResult)
                 
             case .failure(let error):
@@ -302,17 +301,10 @@ private extension DefaultMovieListPresenter {
             return
         }
         
-        DispatchQueue.global().async { [weak self] in
-            guard let self else { return }
-            
-            let filteredMovies = lastMovieListResult.filter {
-                return $0.title.localizedCaseInsensitiveContains(query)
-            }
-
-            DispatchQueue.main.async {
-                self.updateMovieListViewState(with: filteredMovies)
-            }
+        let filteredMovies = lastMovieListResult.filter {
+            return $0.title.localizedCaseInsensitiveContains(query)
         }
+        updateMovieListViewState(with: filteredMovies)
     }
     
     func prepareForRequest(isNewRequest: Bool) -> RequestPrepareInfo {
@@ -331,7 +323,7 @@ private extension DefaultMovieListPresenter {
                 isPrepareToLoad: false
             )
         }
-        
+
         previousPage = requestPage
         return RequestPrepareInfo(
             page: requestPage,
@@ -382,8 +374,9 @@ private extension DefaultMovieListPresenter {
             updateMovieListViewState(with: lastMovieListResult)
             view.hideLoadingAnimation()
             
-            if !isInternetConnectionErrorAvailable {
-                view.showError(message: AppConstant.noInternetConnectionErrorMessage)
+            if !validateInternetConnection() {
+                isInternetConnectionErrorAvailable = false
+                return
             }
         }
     }
@@ -406,7 +399,7 @@ private extension DefaultMovieListPresenter {
     }
     
     func clearMovieModel() {
-        DefaultMovieModelManager.shared.removeMovieListItems(
+        DefaultMovieModelManager.shared.removeMovieItems(
             errorHandler: defaultErrorHandler
         )
     }

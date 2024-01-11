@@ -259,9 +259,9 @@
 		9A09B6DF2B4400AC003668B7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				9A0429C72B501B9C0011BDC5 /* MovieModel.xcdatamodeld */,
 				9A0429CF2B502AE00011BDC5 /* MovieItem */,
 				9A0429CE2B502AD00011BDC5 /* MovieGenreItem */,
+				9A0429C72B501B9C0011BDC5 /* MovieModel.xcdatamodeld */,
 				9A09B6C72B43FB75003668B7 /* Assets.xcassets */,
 				9AFBCDD32B4832BE00A2367D /* AppConstant.swift */,
 				9AC7EC102B44AFD100014E97 /* MovieApiConstant.swift */,

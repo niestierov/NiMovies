@@ -47,7 +47,7 @@ final class MovieDetailsViewController: UIViewController, Alert {
         return movieDetailsHeader
     }()
     
-    private lazy var tableEmptyView: EmtpyStateView = {
+    private lazy var tableEmptyStateView: EmtpyStateView = {
         let view = EmtpyStateView()
         view.configure(title: AppConstant.defaultErrorMessage)
         return view
@@ -115,7 +115,7 @@ private extension MovieDetailsViewController {
     
     func updateTableView() {
         if presenter.getSectionCount() == .zero {
-            tableView.backgroundView = tableEmptyView
+            tableView.backgroundView = tableEmptyStateView
         } else {
             tableView.backgroundView = nil
             let imageUrlString = presenter.getHeader()?.backdrop ?? ""
@@ -225,7 +225,10 @@ extension MovieDetailsViewController: UITableViewDelegate {
         }
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+    func tableView(
+        _ tableView: UITableView,
+        heightForRowAt indexPath: IndexPath
+    ) -> CGFloat {
         let section = presenter.getSection(by: indexPath.section)
         
         switch section {
