@@ -26,6 +26,8 @@ protocol MovieListPresenter {
     func didSelectMovie(at index: Int)
     func getInternetConnectionStatus() -> Bool
     func isRequestAvailable() -> Bool
+    @discardableResult 
+    func validateInternetConnection() -> Bool
 }
 
 final class DefaultMovieListPresenter: MovieListPresenter {
@@ -40,7 +42,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     private unowned var view: MovieListView
     private let apiService: MovieListApiService
     private lazy var moviesGenreList: [MovieGenre] = []
-    private lazy var lastMovieListResult: [MovieResult] = []
+    private lazy var movieListResult: [MovieResult] = []
     private lazy var movieListViewState = MovieListViewState()
     private(set) lazy var sortType: MovieListSortType = .popularityDescending
     private let requestsGroup = DispatchGroup()
@@ -90,6 +92,15 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     
     func getInternetConnectionStatus() -> Bool {
         isConnectedToInternet
+    }
+    
+    @discardableResult
+    func validateInternetConnection() -> Bool {
+        if !isConnectedToInternet {
+            defaultErrorHandler(NetworkError.noInternetConnection)
+            return false
+        }
+        return true
     }
     
     func isRequestAvailable() -> Bool {
@@ -152,16 +163,18 @@ private extension DefaultMovieListPresenter {
         group: DispatchGroup? = nil
     ) {
         group?.enter()
-        let requestPrepareInfo = prepareForRequest(isNewRequest: isNewLoad)
+        isRequestLoading = true
         
-        guard requestPrepareInfo.isPrepareToLoad else {
+        let requestInfo = prepareForRequest(isNewRequest: isNewLoad)
+        
+        guard requestInfo.isPrepareToLoad else {
             group?.leave()
             return
         }
         
         apiService.fetchMovieList(
             by: sortType,
-            for: requestPrepareInfo.page
+            for: requestInfo.page
         ) { [weak self] response in
             guard let self else { return }
             
@@ -169,16 +182,24 @@ private extension DefaultMovieListPresenter {
             
             switch response {
             case .success(let result):
-                lastMovieListResult = result?.results ?? []
+                previousPage = requestInfo.page
+                
+                guard let result else {
+                    return
+                }
+                let movieList = result.results
                 
                 if isNewLoad {
+                    movieListResult = []
                     movieListViewState.movies = []
                     clearMovieModel()
                 }
                 if group == nil {
-                    updateMovieListViewState(with: lastMovieListResult)
+                    updateMovieListViewState(with: movieList)
                 }
-                updateMovieModel(with: lastMovieListResult)
+                movieListResult.append(contentsOf: movieList)
+                updateMovieModel(with: movieList)
+                isInternetConnectionErrorAvailable = true
                 
             case .failure(let error):
                 handlFailureMovieListFetch(error: error)
@@ -227,15 +248,16 @@ private extension DefaultMovieListPresenter {
         with query: String,
         isNewSearch: Bool = false
     ) {
-        let requestPrepareInfo = prepareForRequest(isNewRequest: isNewSearch)
+        isRequestLoading = true
+        let requestInfo = prepareForRequest(isNewRequest: isNewSearch)
         
-        guard requestPrepareInfo.isPrepareToLoad else {
+        guard requestInfo.isPrepareToLoad else {
             return
         }
         
         apiService.fetchSearch(
             with: query,
-            for: requestPrepareInfo.page
+            for: requestInfo.page
         ) { [weak self] response in
             guard let self else { return }
             
@@ -243,6 +265,8 @@ private extension DefaultMovieListPresenter {
             
             switch response {
             case .success(let result):
+                previousPage = requestInfo.page
+                
                 guard let result else {
                     return
                 }
@@ -250,7 +274,6 @@ private extension DefaultMovieListPresenter {
                     movieListViewState.movies = []
                     currentSearchQuery = query
                 }
-                lastMovieListResult = result.results
                 updateMovieListViewState(with: result.results)
                 
             case .failure(let error):
@@ -274,8 +297,10 @@ private extension DefaultMovieListPresenter {
         searchWorkItem?.cancel()
         
         guard let query, !query.isEmpty else {
-            currentSearchQuery = nil
-            fetchMovieList(isNewLoad: true)
+            if currentSearchQuery != nil {
+                fetchMovieList(isNewLoad: true)
+                currentSearchQuery = nil
+            }
             return
         }
         
@@ -294,22 +319,25 @@ private extension DefaultMovieListPresenter {
     }
     
     func searchMoviesLocally(query: String?) {
-        movieListViewState.movies = []
-        
         guard let query, !query.isEmpty else {
-            updateMovieListViewState(with: lastMovieListResult)
+            if currentSearchQuery != nil {
+                movieListViewState.movies = []
+                updateMovieListViewState(with: movieListResult)
+                currentSearchQuery = nil
+            }
             return
         }
+        currentSearchQuery = query
         
-        let filteredMovies = lastMovieListResult.filter {
+        let filteredMovies = movieListResult.filter {
             return $0.title.localizedCaseInsensitiveContains(query)
         }
+        
+        movieListViewState.movies = []
         updateMovieListViewState(with: filteredMovies)
     }
     
     func prepareForRequest(isNewRequest: Bool) -> RequestPrepareInfo {
-        isRequestLoading = true
-        
         if isNewRequest {
             previousPage = .zero
         }
@@ -317,27 +345,17 @@ private extension DefaultMovieListPresenter {
         
         guard isRequestAvailable() else {
             isRequestLoading = false
-            
+
             return RequestPrepareInfo(
                 page: requestPage,
                 isPrepareToLoad: false
             )
         }
 
-        previousPage = requestPage
         return RequestPrepareInfo(
             page: requestPage,
             isPrepareToLoad: true
         )
-    }
-    
-    @discardableResult
-    func validateInternetConnection() -> Bool {
-        if !isConnectedToInternet {
-            defaultErrorHandler(NetworkError.noInternetConnection)
-            return false
-        }
-        return true
     }
     
     func initialLoadHandler() {
@@ -361,7 +379,7 @@ private extension DefaultMovieListPresenter {
             )
             
             DefaultMovieModelManager.shared.performMovieListUpdate(
-                &lastMovieListResult,
+                &movieListResult,
                 group: requestsGroup,
                 errorHandler: defaultErrorHandler
             )
@@ -371,7 +389,7 @@ private extension DefaultMovieListPresenter {
         requestsGroup.notify(queue: .main) { [weak self] in
             guard let self else { return }
             
-            updateMovieListViewState(with: lastMovieListResult)
+            updateMovieListViewState(with: movieListResult)
             view.hideLoadingAnimation()
             
             if !validateInternetConnection() {
@@ -385,7 +403,7 @@ private extension DefaultMovieListPresenter {
         switch T.self {
         case is MovieResult.Type:
             DefaultMovieModelManager.shared.performModelUpdate(
-                with: lastMovieListResult,
+                with: items,
                 errorHandler: defaultErrorHandler
             )
         case is MovieGenre.Type:

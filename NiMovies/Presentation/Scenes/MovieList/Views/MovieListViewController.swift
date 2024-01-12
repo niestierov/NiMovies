@@ -21,7 +21,7 @@ final class MovieListViewController: UIViewController, Alert {
         static let titleName = "Popular Movies"
         static let sectionInterGroupSpacing: CGFloat = 15
         static let movieItemHeightMultiplier: CGFloat = 1 / 2
-        static let paginationValueUntilLoad: CGFloat = 350
+        static let paginationValueUntilLoad: CGFloat = 450
         static let defaultSectionInset: CGFloat = 16
     }
     
@@ -29,7 +29,7 @@ final class MovieListViewController: UIViewController, Alert {
     
     private var presenter: MovieListPresenter!
     private var loadingAnimationView: LoadingAnimationView!
-    private lazy var isTableViewUpdating = false
+    private lazy var isTableViewUpdating = true
     
     // MARK: - UI Components -
     
@@ -165,6 +165,10 @@ private extension MovieListViewController {
         if let popoverController = sortActionSheet.popoverPresentationController {
             popoverController.barButtonItem = sortButton
         }
+        
+        guard presenter.validateInternetConnection() else {
+            return
+        }
         present(sortActionSheet, animated: true, completion: nil)
     }
 }
@@ -173,7 +177,7 @@ private extension MovieListViewController {
 
  extension MovieListViewController: MovieListView {
      func update() {
-         collectionView.setContentOffset(.zero, animated: true)
+         collectionView.setContentOffset(.zero, animated: false)
          addEmptyViewIfNeeded()
          isTableViewUpdating = true
          
