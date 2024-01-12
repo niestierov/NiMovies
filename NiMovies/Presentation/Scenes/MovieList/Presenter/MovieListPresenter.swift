@@ -408,7 +408,7 @@ private extension DefaultMovieListPresenter {
             )
         case is MovieGenre.Type:
             DefaultMovieModelManager.shared.performModelUpdate(
-                with: moviesGenreList,
+                with: items,
                 errorHandler: defaultErrorHandler
             )
         default:
