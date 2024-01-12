@@ -8,10 +8,19 @@
 import Foundation
 import UIKit
 
+struct MovieDetailsConfiguration {
+    let id: Int
+    let title: String
+}
+
 protocol MovieDetailsPresenter {
     func initialLoad()
     func getPosterUrl() -> String?
     func getVideoKeys() -> [String]?
+    func getSectionCount() -> Int
+    func getSection(by section: Int) -> MovieDetailsViewState.Section
+    func getHeader() -> MovieDetailsViewState.MovieDetailsHeader?
+    func getTitle() -> String
 }
 
 final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
@@ -24,8 +33,10 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     
     private unowned let view: MovieDetailsView
     private let apiService: MovieDetailsApiService
-    private let movieId: Int
-    private var movieDetailsViewState = MovieDetailsViewState()
+    private let configuration: MovieDetailsConfiguration
+    private(set) lazy var movieDetailsViewState: MovieDetailsViewState = MovieDetailsViewState.makeInitialViewState(with: configuration)
+    private let requestGroup = DispatchGroup()
+    private var movieDetails: MovieDetailsResult?
     private var videoKeys: [String]?
     
     // MARK: - Init -
@@ -33,42 +44,51 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     init(
         view: MovieDetailsView,
         apiService: MovieDetailsApiService,
-        movieId: Int
+        configuration: MovieDetailsConfiguration
     ) {
         self.view = view
         self.apiService = apiService
-        self.movieId = movieId
+        self.configuration = configuration
     }
     
     // MARK: - Internal -
     
     func initialLoad() {
-        DispatchQueue.global().async { [weak self] in
-            self?.fetchMovieDetails()
-            self?.fetchMovieVideos()
-        }
+        initialRequestsHander()
+    }
+    
+    func getSectionCount() -> Int {
+        movieDetailsViewState.sections.count
+    }
+    
+    func getSection(by section: Int) -> MovieDetailsViewState.Section {
+        movieDetailsViewState.sections[section]
+    }
+    
+    func getHeader() -> MovieDetailsViewState.MovieDetailsHeader? {
+        movieDetailsViewState.header
+    }
+    
+    func getTitle() -> String {
+        movieDetailsViewState.title
     }
     
     func getPosterUrl() -> String? {
-        guard let posterUrl = movieDetailsViewState.movie?.posterUrlString else {
-            return nil
-        }
-        return posterUrl
+        movieDetailsViewState.header?.poster ?? nil
     }
     
     func getVideoKeys() -> [String]? {
-        guard let videoKeys else {
-            return nil
-        }
-        return videoKeys
+        videoKeys ?? nil
     }
 }
 
 // MARK: - Private -
 
 private extension DefaultMovieDetailsPresenter {
-    func fetchMovieDetails() {
-        apiService.fetchMovieDetails(movieId: movieId) { [weak self] response in
+    func fetchMovieDetails(group: DispatchGroup? = nil) {
+        group?.enter()
+        
+        apiService.fetchMovieDetails(movieId: configuration.id) { [weak self] response in
             guard let self else { return }
             
             switch response {
@@ -76,15 +96,19 @@ private extension DefaultMovieDetailsPresenter {
                 guard let movieDetails else {
                     return
                 }
-                updateViewState(with: movieDetails)
+                self.movieDetails = movieDetails
+
             case.failure(let error):
                 view.showError(message: error.localizedDescription)
             }
+            group?.leave()
         }
     }
     
-    func fetchMovieVideos() {
-        apiService.fetchMovieVideos(movieId: movieId) { [weak self] response in
+    func fetchMovieVideos(group: DispatchGroup? = nil) {
+        group?.enter()
+        
+        apiService.fetchMovieVideos(movieId: configuration.id) { [weak self] response in
             guard let self else { return }
             
             switch response {
@@ -96,30 +120,46 @@ private extension DefaultMovieDetailsPresenter {
                     return
                 }
                 self.videoKeys = keys
-                view.updateTrailerButton(isHidden: keys.isEmpty)
-
+                
             case .failure(let error):
                 view.showError(message: error.localizedDescription)
             }
+            group?.leave()
         }
     }
     
-    func updateViewState(with movieResult: MovieDetailsResult) {
-        let movie = MovieDetailsViewState.makeMovie(movieResult)
-        view.update(with: movie)
-        movieDetailsViewState.movie = movie
+    func updateViewState() {
+        if let movieDetails {
+            movieDetailsViewState = MovieDetailsViewState.makeViewState(
+                movieDetails: movieDetails,
+                videoKeys: videoKeys
+            )
+        }
+        view.update(with: getTitle())
     }
     
     func getVideoKeys(by movieVideo: [MovieVideo]) -> [String]? {
         let keys = movieVideo.compactMap { result -> String? in
             guard Constant.suitableVideoTypes.contains(result.type),
                   result.site == Constant.youTubeTitle,
-                  let key = result.key
-            else {
+                  let key = result.key else {
                 return nil
             }
             return key
         }
         return keys
+    }
+    
+    func initialRequestsHander() {
+        DispatchQueue.global().async { [weak self] in
+            guard let self else { return }
+            
+            fetchMovieDetails(group: requestGroup)
+            fetchMovieVideos(group: requestGroup)
+            
+            requestGroup.notify(queue: .main) { [weak self] in
+                self?.updateViewState()
+            }
+        }
     }
 }

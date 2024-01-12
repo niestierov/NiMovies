@@ -26,7 +26,7 @@ extension MovieListViewState {
         with genreList: [MovieGenre]
     ) {
         let additionalMovies = movieList.compactMap { movie in
-            let image = MovieConfiguration.basePosterUrl + (movie.backdropPath ?? "")
+            let image = MovieApiConstant.basePosterUrl + (movie.backdropPath ?? "")
             let releaseDate = movie.releaseDate ?? ""
             let voteAverage = (movie.voteAverage ?? .zero).stringValue
             let genres = movie.genreIds.compactMap { genreId in

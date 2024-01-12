@@ -76,48 +76,46 @@ final class DefaultMovieListApiService: MovieListApiService {
 
 // MARK: - MovieListEndpoint -
 
-extension DefaultMovieListApiService {
-    fileprivate enum MovieListEndpoint {
-        case list(sortType: MovieListSortType, page: Int)
-        case search(query: String, page: Int)
-        case genres
-        
-        private var path: String {
-            switch self {
-            case .list:
-                "/discover/movie"
-            case .search:
-                "/search/movie"
-            case .genres:
-                "/genre/movie/list"
-            }
+fileprivate enum MovieListEndpoint {
+    case list(sortType: MovieListSortType, page: Int)
+    case search(query: String, page: Int)
+    case genres
+    
+    private var path: String {
+        switch self {
+        case .list:
+            "/discover/movie"
+        case .search:
+            "/search/movie"
+        case .genres:
+            "/genre/movie/list"
         }
+    }
+    
+    var parameters: [String: Any] {
+        var baseParameters: [String: Any] = [
+            MovieApiConstant.apiKey: MovieApiConstant.getSecretKey()
+        ]
         
-        var parameters: [String: Any] {
-            var baseParameters: [String: Any] = [
-                MovieConfiguration.apiKey: MovieConfiguration.getSecretKey()
-            ]
-            
-            switch self {
-            case .list(let sortType, let page):
-                baseParameters[ApiConstant.MovieListFields.sortType] = sortType.rawValue
-                baseParameters[ApiConstant.MovieListFields.page] = page
-            case .search(let query, let page):
-                baseParameters[ApiConstant.MovieSearchFields.query] = query
-                baseParameters[ApiConstant.MovieSearchFields.page] = page
-            case .genres:
-                break
-            }
-            return baseParameters
+        switch self {
+        case .list(let sortType, let page):
+            baseParameters[ApiConstant.MovieListFields.sortType] = sortType.rawValue
+            baseParameters[ApiConstant.MovieListFields.page] = page
+        case .search(let query, let page):
+            baseParameters[ApiConstant.MovieSearchFields.query] = query
+            baseParameters[ApiConstant.MovieSearchFields.page] = page
+        case .genres:
+            break
         }
+        return baseParameters
+    }
+    
+    var url: URL? {
+        let urlString = MovieApiConstant.baseUrl + path
         
-        var url: URL? {
-            let urlString = MovieConfiguration.baseUrl + path
-            
-            guard let url = URL(string: urlString) else {
-                return nil
-            }
-            return url
+        guard let url = URL(string: urlString) else {
+            return nil
         }
+        return url
     }
 }

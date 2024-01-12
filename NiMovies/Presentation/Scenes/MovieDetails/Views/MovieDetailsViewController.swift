@@ -8,16 +8,11 @@
 import UIKit
 
 protocol MovieDetailsView: AnyObject {
+    func update(with title: String)
     func showError(message: String?)
-    func update(with movie: MovieDetailsViewState.Movie)
-    func updateTrailerButton(isHidden: Bool)
 }
 
 final class MovieDetailsViewController: UIViewController, Alert {
-    private struct Constant {
-        static let defaultInset: CGFloat = 20
-        static let trailerButtonImageName = "play.circle.fill"
-    }
     
     // MARK: - Properties -
     
@@ -27,104 +22,35 @@ final class MovieDetailsViewController: UIViewController, Alert {
     
     // MARK: - UI Components -
     
-    private lazy var scrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        scrollView.isScrollEnabled = true
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        return scrollView
+    private lazy var tableView: UITableView = {
+        let tableView = UITableView()
+        tableView.isScrollEnabled = true
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.separatorStyle = .none
+        tableView.backgroundColor = .clear
+        tableView.tableHeaderView = movieDetailsHeaderView
+        tableView.register(MovieDetailsAttributeTableViewCell.self)
+        tableView.register(MovieDetailsTrailerTableViewCell.self)
+        tableView.register(MovieDetailsAttributeHeaderView.self)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        return tableView
     }()
     
-    private lazy var mainStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.spacing = 20
-        stackView.axis = .vertical
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        return stackView
+    private lazy var movieDetailsHeaderView: MovieDetailsHeaderView = {
+        let movieDetailsHeader = MovieDetailsHeaderView()
+        movieDetailsHeader.imageViewTapGestureHandler = { [weak self] in
+            self?.openZoomPosterScreen()
+        }
+        movieDetailsHeader.isHidden = true
+        movieDetailsHeader.translatesAutoresizingMaskIntoConstraints = false
+        return movieDetailsHeader
     }()
     
-    private lazy var trailerStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .horizontal
-        stackView.spacing = 15
-        stackView.distribution = .fillProportionally
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        return stackView
-    }()
-    
-    private lazy var trailerPrefixLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Watch latest trailer:"
-        label.font = .systemFont(ofSize: 21, weight: .bold)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private lazy var trailerButton: UIButton = {
-        let button = UIButton()
-        button.setImage(
-            UIImage(systemName: Constant.trailerButtonImageName),
-            for: .normal
-        )
-        button.isHidden = true
-        button.tintColor = .black
-        button.contentVerticalAlignment = .fill
-        button.contentHorizontalAlignment = .fill
-        button.backgroundColor = .red
-        button.clipsToBounds = true
-        button.addTarget(self, action: #selector(didTapTrailerButton), for: .touchUpInside)
-        button.imageView?.applyShadow(color: UIColor.black.cgColor, opacity: 0.5, radius: 4)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-    
-    private lazy var titleStackView: MovieDetailsStackViewItem = {
-        let stackView = MovieDetailsStackViewItem(title: "Title")
-        stackView.contentText = "Title unknown."
-        return stackView
-    }()
-    
-    private lazy var descriptionStackView: MovieDetailsStackViewItem = {
-        let stackView = MovieDetailsStackViewItem(title: "Descriprion")
-        stackView.contentText = "It looks like there is no description."
-        return stackView
-    }()
-    
-    private lazy var releaseDateStackView: MovieDetailsStackViewItem = {
-        let stackView = MovieDetailsStackViewItem(title: "Release date")
-        stackView.contentText = "Release unknown."
-        return stackView
-    }()
-    
-    private lazy var ratingStackView: MovieDetailsStackViewItem = {
-        let stackView = MovieDetailsStackViewItem(title: "Rating")
-        stackView.contentText = "Rating unknown"
-        return stackView
-    }()
-    
-    private lazy var productionStackView: MovieDetailsStackViewItem = {
-        let stackView = MovieDetailsStackViewItem(title: "Production")
-        stackView.contentText = "Production unknown."
-        return stackView
-    }()
-    
-    private lazy var genresStackView: MovieDetailsStackViewItem = {
-        let stackView = MovieDetailsStackViewItem(title: "Genres")
-        stackView.contentText = "Genres unknown"
-        return stackView
-    }()
-    
-    private lazy var movieImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
-        imageView.applyShadow(radius: 8)
-        imageView.isUserInteractionEnabled = true
-        let tapGesture = UITapGestureRecognizer(
-            target: self,
-            action: #selector(didTapImageView)
-        )
-        imageView.addGestureRecognizer(tapGesture)
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        return imageView
+    private lazy var tableEmptyStateView: EmtpyStateView = {
+        let view = EmtpyStateView()
+        view.configure(title: AppConstant.defaultErrorMessage)
+        return view
     }()
     
     // MARK: - Life Cycle -
@@ -134,12 +60,6 @@ final class MovieDetailsViewController: UIViewController, Alert {
         
         setupView()
         presenter.initialLoad()
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        trailerButton.applyRoundedCorners(radius: trailerButton.frame.width / 2)
     }
     
     // MARK: - Internal -
@@ -161,105 +81,162 @@ private extension MovieDetailsViewController {
     func setupView() {
         view.backgroundColor = .white
         
-        view.addSubview(scrollView)
-        
-        scrollView.addSubview(movieImageView)
-        scrollView.addSubview(mainStackView)
-        
-        mainStackView.addArrangedSubview(trailerStackView)
-        mainStackView.addArrangedSubview(titleStackView)
-        mainStackView.addArrangedSubview(genresStackView)
-        mainStackView.addArrangedSubview(releaseDateStackView)
-        mainStackView.addArrangedSubview(descriptionStackView)
-        mainStackView.addArrangedSubview(ratingStackView)
-        mainStackView.addArrangedSubview(productionStackView)
-        
-        trailerStackView.addArrangedSubview(trailerPrefixLabel)
-        trailerStackView.addArrangedSubview(trailerButton)
+        view.addSubview(tableView)
+        tableView.tableHeaderView = movieDetailsHeaderView
         
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
-            movieImageView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            movieImageView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            movieImageView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            movieImageView.widthAnchor.constraint(equalTo: view.widthAnchor),
-            movieImageView.heightAnchor.constraint(
+            movieDetailsHeaderView.widthAnchor.constraint(equalTo: tableView.widthAnchor),
+            movieDetailsHeaderView.heightAnchor.constraint(
                 equalTo: view.heightAnchor,
-                multiplier: 0.3
-            ),
-            
-            mainStackView.topAnchor.constraint(
-                equalTo: movieImageView.bottomAnchor,
-                constant: 5
-            ),
-            mainStackView.bottomAnchor.constraint(
-                equalTo: scrollView.bottomAnchor,
-                constant: -Constant.defaultInset
-            ),
-            mainStackView.leadingAnchor.constraint(
-                equalTo: scrollView.leadingAnchor,
-                constant: Constant.defaultInset
-            ),
-            mainStackView.trailingAnchor.constraint(
-                equalTo: scrollView.trailingAnchor,
-                constant: -Constant.defaultInset
-            ),
-            
-            trailerButton.widthAnchor.constraint(
-                equalTo: view.widthAnchor,
-                multiplier: 0.16
-            ),
-            trailerButton.heightAnchor.constraint(equalTo: trailerButton.widthAnchor),
+                multiplier: 1/3.5
+            )
         ])
-        view.layoutIfNeeded()
     }
     
-    @objc
-    func didTapImageView() {
+    func openZoomPosterScreen() {
         guard let posterUrl = presenter.getPosterUrl() else {
             return
         }
         imageScreenView.show(with: posterUrl, on: self)
     }
     
-    @objc
-    func didTapTrailerButton() {
+    func playTrailer() {
         guard let videoKeys = presenter.getVideoKeys() else {
             showError(message: AppConstant.defaultErrorMessage)
             return
         }
         youTubePlayerView.showAndPlayVideo(with: videoKeys, on: self)
     }
+    
+    func updateTableView() {
+        if presenter.getSectionCount() == .zero {
+            tableView.backgroundView = tableEmptyStateView
+        } else {
+            tableView.backgroundView = nil
+            let imageUrlString = presenter.getHeader()?.backdrop ?? ""
+            movieDetailsHeaderView.configure(image: imageUrlString)
+            movieDetailsHeaderView.isHidden = false
+        }
+    }
 }
 
 extension MovieDetailsViewController: MovieDetailsView {
-    func showError(message: String?) {
+    func showError(message: String? = nil) {
         showAlert(message: message ?? AppConstant.defaultErrorMessage)
     }
     
-    func update(with movie: MovieDetailsViewState.Movie) {
-        movieImageView.setImage(
-            with: movie.backdropUrlString,
-            placeholder: UIImage(named: AppConstant.moviePosterPlaceholderName)
-        )
+    func update(with title: String) {
+        updateTableView()
         
-        titleStackView.contentText = movie.title
-        releaseDateStackView.contentText = movie.releaseDate
-        genresStackView.contentText = movie.genres
-        descriptionStackView.contentText = movie.overview
-        ratingStackView.contentText = movie.voteAverage
-        productionStackView.contentText = movie.country
+        UIView.animate(withDuration: 0) {
+            self.title = title
+            self.tableView.reloadData()
+        }
     }
-    
-    func updateTrailerButton(isHidden: Bool) {
-        trailerButton.isHidden = isHidden
-    }
-    
+
     func showYouTubePlayer(with videoKeys: [String]) {
         youTubePlayerView.showAndPlayVideo(with: videoKeys, on: self)
     }
+}
+
+// MARK: - UITableViewDataSource -
+
+extension MovieDetailsViewController: UITableViewDataSource {
+    func tableView(
+        _ tableView: UITableView,
+        numberOfRowsInSection section: Int
+    ) -> Int {
+        return 1
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return presenter.getSectionCount()
+    }
+    
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
+        let section = presenter.getSection(by: indexPath.section)
+    
+        switch section {
+        case .attributeItem(let item):
+            let cell = tableView.dequeue(
+                MovieDetailsAttributeTableViewCell.self,
+                for: indexPath
+            )
+            cell.selectionStyle = .none
+            
+            cell.configure(description: item.cell.description)
+            return cell
+            
+        case .trailerItem(let item):
+            let cell = tableView.dequeue(
+                MovieDetailsTrailerTableViewCell.self,
+                for: indexPath
+            )
+            cell.selectionStyle = .none
+            cell.isHidden = !item.cell.isTrailerAvailable
+            
+            cell.trailerButtonTapHandler = { [weak self] in
+                self?.playTrailer()
+            }
+            return cell
+        }
+    }
+}
+
+// MARK: - UITableViewDelegate -
+
+extension MovieDetailsViewController: UITableViewDelegate {
+    func tableView(
+        _ tableView: UITableView,
+        viewForHeaderInSection section: Int
+    ) -> UIView? {
+        let section = presenter.getSection(by: section)
+        
+        switch section {
+        case .attributeItem(let item):
+            let header = tableView.dequeue(MovieDetailsAttributeHeaderView.self)
+            header.configure(title: item.header.rawValue)
+            return header
+            
+        case .trailerItem:
+            return nil
+        }
+    }
+    
+    func tableView(
+        _ tableView: UITableView,
+        heightForHeaderInSection section: Int
+    ) -> CGFloat {
+        let section = presenter.getSection(by: section)
+        
+        switch section {
+        case .attributeItem:
+            return UITableView.automaticDimension
+        case .trailerItem:
+            return .zero
+        }
+    }
+    
+    func tableView(
+        _ tableView: UITableView,
+        heightForRowAt indexPath: IndexPath
+    ) -> CGFloat {
+        let section = presenter.getSection(by: indexPath.section)
+        
+        switch section {
+        case .trailerItem(let item):
+            return item.cell.isTrailerAvailable ? UITableView.automaticDimension : .zero
+        case .attributeItem(_):
+            return UITableView.automaticDimension
+        }
+    }
+
 }

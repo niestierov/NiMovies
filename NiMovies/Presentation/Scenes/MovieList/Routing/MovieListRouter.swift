@@ -8,7 +8,7 @@
 import UIKit
 
 protocol MovieListRouter {
-    func showNiPostDetails(movieId: Int)
+    func showNiPostDetails(with configuration: MovieDetailsConfiguration)
 }
 
 final class DefaultMovieListRouter: BaseRouter, MovieListRouter {
@@ -23,8 +23,8 @@ final class DefaultMovieListRouter: BaseRouter, MovieListRouter {
         self.root = root
     }
     
-    func showNiPostDetails(movieId: Int) {
-        let movieDetails = DefaultMovieDetailsAssembly().createMovieDetails(movieId: movieId)
+    func showNiPostDetails(with configuration: MovieDetailsConfiguration) {
+        let movieDetails = DefaultMovieDetailsAssembly().createMovieDetails(with: configuration)
         root.navigationController?.pushViewController(movieDetails, animated: true)
     }
 }

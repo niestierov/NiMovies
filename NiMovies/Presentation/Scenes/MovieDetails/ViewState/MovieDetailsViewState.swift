@@ -8,73 +8,142 @@
 import Foundation
 
 struct MovieDetailsViewState {
-    struct Movie {
-        let title: String
-        let backdropUrlString: String
-        let posterUrlString: String
-        let genres: String
-        let overview: String
-        let voteAverage: String
-        let country: String
-        let releaseDate: String
+    enum Section {
+        case trailerItem(TrailerItem)
+        case attributeItem(AttributeItem)
     }
     
-    var movie: Movie?
+    struct TrailerItem {
+        let cell: Cell
+        
+        struct Cell {
+            let isTrailerAvailable: Bool
+        }
+    }
+
+    struct AttributeItem {
+        let header: Header
+        let cell: Cell
+        
+        struct Cell {
+            let description: String
+        }
+        
+        enum Header: String {
+            case title = "Title"
+            case genres = "Genres"
+            case releaseDate = "Release date"
+            case description = "Description"
+            case rating = "Rating"
+            case production = "Production"
+        }
+    }
+    
+    struct MovieDetailsHeader {
+        let backdrop: String
+        let poster: String?
+    }
+    
+    let title: String
+    let header: MovieDetailsHeader?
+    let sections: [Section]
 }
 
 extension MovieDetailsViewState {
-    static func makeMovie(_ movie: MovieDetailsResult) -> MovieDetailsViewState.Movie {
-        let backdropUrlString = MovieConfiguration.basePosterUrl + (movie.backdropPath ?? "")
-        let posterUrlString = MovieConfiguration.basePosterUrl + (movie.posterPath ?? "")
-        let voteAverage = (movie.voteAverage ?? .zero).stringValue
-        let title = setDefaultValueIfNeeded(
-            for: movie.title,
-            with: "Title unknown."
+    static func makeInitialViewState(
+        with configuration: MovieDetailsConfiguration
+    ) -> MovieDetailsViewState {
+        return MovieDetailsViewState(
+            title: configuration.title,
+            header: nil,
+            sections: []
         )
-        let unpackedGenres = movie.genres?.compactMap { $0.name }.joined(separator: ", ")
-        let genres = setDefaultValueIfNeeded(
-            for: unpackedGenres,
-            with: "Genres unknown."
-        )
-        let releaseDate = setDefaultValueIfNeeded(
-            for: movie.releaseDate,
-            with: "Release unknown."
-        )
-        let country = setDefaultValueIfNeeded(
-            for: movie.productionCountries?.first?.name,
-            with: "Production unknown."
-        )
-        let overview = setDefaultValueIfNeeded(
-            for: movie.overview,
-            with: "It looks like there is no description."
-        )
-        
-        return MovieDetailsViewState.Movie(
-            title: title,
-            backdropUrlString: backdropUrlString, 
-            posterUrlString: posterUrlString,
-            genres: genres,
-            overview: overview, 
-            voteAverage: voteAverage, 
-            country: country,
-            releaseDate: releaseDate
-        )
-        
-//        let backdropUrlString = MovieConfiguration.basePosterUrl + (movie.backdropPath ?? "")
-//        let posterUrlString = MovieConfiguration.basePosterUrl + (movie.posterPath ?? "")
-//        let voteAverage = (movie.voteAverage ?? .zero).stringValue
-//        let title
-//        let genres
-//        let country
-//        let overview
     }
     
-    private static func setDefaultValueIfNeeded<T>(for value: T?, with defaultValue: String) -> String {
-        guard let value else {
-            return defaultValue
-        }
-        let stringValue = String(describing: value)
+    static func makeViewState(
+        movieDetails: MovieDetailsResult,
+        videoKeys: [String]?
+    ) -> MovieDetailsViewState {
+        let genres = movieDetails.genres?.compactMap { $0.name }.joined(separator: ", ")
         
-        return stringValue.isEmpty ? defaultValue : stringValue
+        let titleSectionDescription = movieDetails.title.setDefaultIfNilOrEmpty("Title unknown")
+        let genresSectionDescription = genres.setDefaultIfNilOrEmpty("Genres unknown")
+        let releaseSectionDescription = movieDetails.releaseDate.setDefaultIfNilOrEmpty("Release unknown")
+        let descriptionSectionDescription = movieDetails.title.setDefaultIfNilOrEmpty("Genres unknown")
+        let ratingSectionDescription = (movieDetails.voteAverage ?? .zero).stringValue
+        let productionSectionDescription = movieDetails.title.setDefaultIfNilOrEmpty("Genres unknown")
+        let trailerSectionAvailable = !videoKeys.isEmptyOrNil
+        
+        let sections: [MovieDetailsViewState.Section] = [
+            makeAttributeSection(
+                header: .title,
+                description: titleSectionDescription
+            ),
+            makeAttributeSection(
+                header: .genres,
+                description: genresSectionDescription
+            ),
+            makeAttributeSection(
+                header: .releaseDate,
+                description: releaseSectionDescription
+            ),
+            makeAttributeSection(
+                header: .description,
+                description: descriptionSectionDescription
+            ),
+            makeAttributeSection(
+                header: .rating,
+                description: ratingSectionDescription
+            ),
+            makeAttributeSection(
+                header: .production,
+                description: productionSectionDescription
+            ),
+            makeTrailerSection(isTrailerAvailable: trailerSectionAvailable)
+        ]
+        
+        let backdropUrlString = MovieApiConstant.basePosterUrl + movieDetails.backdropPath.setDefaultIfNilOrEmpty()
+        
+        var posterUrlString: String?
+        if let posterPath = movieDetails.posterPath {
+            posterUrlString = MovieApiConstant.basePosterUrl + posterPath
+        }
+        
+        let header = MovieDetailsHeader(
+            backdrop: backdropUrlString,
+            poster: posterUrlString
+        )
+        let title = movieDetails.title.setDefaultIfNilOrEmpty("Title")
+        
+        return MovieDetailsViewState(
+            title: title, 
+            header: header,
+            sections: sections
+        )
     }
 }
+
+// MARK: - Private -
+
+private extension MovieDetailsViewState {
+    static func makeAttributeSection(
+        header: AttributeItem.Header,
+        description: String
+    ) -> MovieDetailsViewState.Section {
+        let cell = AttributeItem.Cell(description: description)
+        let attributeItem = AttributeItem(
+            header: header,
+            cell: cell
+        )
+        return MovieDetailsViewState.Section.attributeItem(attributeItem)
+    }
+    
+    static func makeTrailerSection(isTrailerAvailable: Bool) -> MovieDetailsViewState.Section {
+        let cell = TrailerItem.Cell(isTrailerAvailable: isTrailerAvailable)
+        let trailerItem = TrailerItem(cell: cell)
+        return MovieDetailsViewState.Section.trailerItem(trailerItem)
+    }
+}
+
+
+

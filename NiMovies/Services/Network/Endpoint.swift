@@ -8,7 +8,7 @@
 import Foundation
 import Alamofire
 
-final class Endpoint<T: Codable>: Requestable {
+struct Endpoint<T: Codable>: Requestable {
     typealias ResponseType = T
     
     // MARK: - Properties -
