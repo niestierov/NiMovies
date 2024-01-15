@@ -65,13 +65,14 @@ extension MovieDetailsViewState {
         videoKeys: [String]?
     ) -> MovieDetailsViewState {
         let genres = movieDetails.genres?.compactMap { $0.name }.joined(separator: ", ")
+        let production = movieDetails.productionCountries?.compactMap { $0.name }.joined(separator: ", ")
         
         let titleSectionDescription = movieDetails.title.setDefaultIfNilOrEmpty("Title unknown")
         let genresSectionDescription = genres.setDefaultIfNilOrEmpty("Genres unknown")
         let releaseSectionDescription = movieDetails.releaseDate.setDefaultIfNilOrEmpty("Release unknown")
-        let descriptionSectionDescription = movieDetails.title.setDefaultIfNilOrEmpty("Genres unknown")
+        let descriptionSectionDescription = movieDetails.overview.setDefaultIfNilOrEmpty("Description unknown")
         let ratingSectionDescription = (movieDetails.voteAverage ?? .zero).stringValue
-        let productionSectionDescription = movieDetails.title.setDefaultIfNilOrEmpty("Genres unknown")
+        let productionSectionDescription = production.setDefaultIfNilOrEmpty("Production unknown")
         let trailerSectionAvailable = !videoKeys.isEmptyOrNil
         
         let sections: [MovieDetailsViewState.Section] = [
