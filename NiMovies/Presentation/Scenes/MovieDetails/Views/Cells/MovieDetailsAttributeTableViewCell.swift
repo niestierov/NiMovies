@@ -67,8 +67,7 @@ private extension MovieDetailsAttributeTableViewCell {
                 constant: -Constant.defaultHorizontalInset
             ),
             descriptionLabel.bottomAnchor.constraint(
-                equalTo: contentView.bottomAnchor,
-                constant: -Constant.defaultVerticalInset
+                equalTo: contentView.bottomAnchor
             ),
         ])
     }

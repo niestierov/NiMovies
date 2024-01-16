@@ -21,7 +21,7 @@ final class MovieListViewController: UIViewController, Alert {
         static let titleName = "Popular Movies"
         static let sectionInterGroupSpacing: CGFloat = 15
         static let movieItemHeightMultiplier: CGFloat = 1 / 2
-        static let paginationValueUntilLoad: CGFloat = 450
+        static let paginationValueUntilLoad: CGFloat = 500
         static let defaultSectionInset: CGFloat = 16
     }
     
@@ -75,20 +75,7 @@ final class MovieListViewController: UIViewController, Alert {
             preferredStyle: .actionSheet
         )
         MovieListSortType.allCases.forEach { type in
-            let action = UIAlertAction(
-                title: type.title,
-                style: .default
-            ) { [weak self] currentAction in
-                guard let self, type != presenter.sortType else {
-                    return
-                }
-                presenter.sortMovies(by: type)
-                
-                for action in alertController.actions {
-                    action.isChecked = action == currentAction
-                }
-            }
-            action.isChecked = type == presenter.sortType
+            let action = createSortTypeAction(type: type, controller: alertController)
             alertController.addAction(action)
         }
         alertController.addAction(UIAlertAction.cancelAction())
@@ -160,15 +147,36 @@ private extension MovieListViewController {
         collectionView.backgroundView = isNeeded ? collectionEmptyView : nil
     }
     
+    func createSortTypeAction(
+        type: MovieListSortType,
+        controller: UIAlertController
+    ) -> UIAlertAction {
+        let action = UIAlertAction(
+            title: type.title,
+            style: .default
+        ) { [weak self] currentAction in
+            guard let self,
+                  type != presenter.sortType,
+                  presenter.validateInternetConnection() else {
+                return
+            }
+            presenter.sortMovies(by: type)
+            
+            for action in controller.actions {
+                action.isChecked = action == currentAction
+            }
+        }
+        action.isChecked = type == presenter.sortType
+        
+        return action
+    }
+    
     @objc
     func didTapSortButton() {
         if let popoverController = sortActionSheet.popoverPresentationController {
             popoverController.barButtonItem = sortButton
         }
-        
-        guard presenter.validateInternetConnection() else {
-            return
-        }
+    
         present(sortActionSheet, animated: true, completion: nil)
     }
 }
@@ -211,7 +219,6 @@ private extension MovieListViewController {
          loadingAnimationView.hide()
      }
  }
-
 
 // MARK: - UICollectionViewDelegate -
 

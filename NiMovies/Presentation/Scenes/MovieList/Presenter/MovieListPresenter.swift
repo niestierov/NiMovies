@@ -34,6 +34,7 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     private struct Constant {
         static let itemsForPageValue = 20
         static let initialFetchPage = 1
+        static let userDefaultsSortTypeKey = "sortType"
     }
     
     // MARK: - Properties -
@@ -76,7 +77,16 @@ final class DefaultMovieListPresenter: MovieListPresenter {
     // MARK: - Internal -
     
     func initialLoad() {
+        updateSortType()
         initialLoadHandler()
+    }
+    
+    func updateSortType() {
+        guard let savedSortType = UserDefaults.standard.string(forKey: Constant.userDefaultsSortTypeKey),
+              let sortType = MovieListSortType(rawValue: savedSortType) else {
+            return
+        }
+        self.sortType = sortType
     }
     
     func getMovieListCount() -> Int {
@@ -114,6 +124,11 @@ final class DefaultMovieListPresenter: MovieListPresenter {
         
         self.sortType = sortType
         fetchMovieList(isNewLoad: true)
+        
+        UserDefaults.standard.set(
+            sortType.rawValue,
+            forKey: Constant.userDefaultsSortTypeKey
+        )
     }
     
     func performMovieSearch(query: String?) {
@@ -372,17 +387,7 @@ private extension DefaultMovieListPresenter {
                 fetchMovieList(isNewLoad: true, group: requestsGroup)
             }
         } else {
-            DefaultMovieModelManager.shared.performMovieGenresUpdate(
-                &moviesGenreList,
-                group: requestsGroup,
-                errorHandler: defaultErrorHandler
-            )
-            
-            DefaultMovieModelManager.shared.performMovieListUpdate(
-                &movieListResult,
-                group: requestsGroup,
-                errorHandler: defaultErrorHandler
-            )
+            updateWithMovieModelData()
             isInternetConnectionErrorAvailable = false
         }
         
@@ -399,21 +404,25 @@ private extension DefaultMovieListPresenter {
         }
     }
     
+    func updateWithMovieModelData() {
+        DefaultMovieModelManager.shared.performMovieGenresUpdate(
+            &moviesGenreList,
+            group: requestsGroup,
+            errorHandler: defaultErrorHandler
+        )
+        DefaultMovieModelManager.shared.performMovieListUpdate(
+            &movieListResult,
+            group: requestsGroup, 
+            with: sortType,
+            errorHandler: defaultErrorHandler
+        )
+    }
+    
     func updateMovieModel<T>(with items: [T]) {
-        switch T.self {
-        case is MovieResult.Type:
-            DefaultMovieModelManager.shared.performModelUpdate(
-                with: items,
-                errorHandler: defaultErrorHandler
-            )
-        case is MovieGenre.Type:
-            DefaultMovieModelManager.shared.performModelUpdate(
-                with: items,
-                errorHandler: defaultErrorHandler
-            )
-        default:
-            break
-        }
+        DefaultMovieModelManager.shared.performModelUpdate(
+            with: items,
+            errorHandler: defaultErrorHandler
+        )
     }
     
     func clearMovieModel() {

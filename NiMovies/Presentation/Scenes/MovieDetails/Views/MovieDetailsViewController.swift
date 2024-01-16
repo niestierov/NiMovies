@@ -23,7 +23,10 @@ final class MovieDetailsViewController: UIViewController, Alert {
     // MARK: - UI Components -
     
     private lazy var tableView: UITableView = {
-        let tableView = UITableView()
+        let tableView = UITableView(
+            frame: .zero,
+            style: .grouped
+        )
         tableView.isScrollEnabled = true
         tableView.dataSource = self
         tableView.delegate = self
@@ -38,12 +41,21 @@ final class MovieDetailsViewController: UIViewController, Alert {
     }()
     
     private lazy var movieDetailsHeaderView: MovieDetailsHeaderView = {
-        let movieDetailsHeader = MovieDetailsHeaderView()
+        let headerHeightMultiplier: CGFloat = 1 / 3.6
+        let headerHeight = view.frame.height * headerHeightMultiplier
+        let headerWidth = view.frame.size.width
+        let frame = CGRect(
+            x: .zero,
+            y: .zero,
+            width: headerWidth,
+            height: headerHeight
+        )
+        
+        let movieDetailsHeader = MovieDetailsHeaderView(frame: frame)
         movieDetailsHeader.imageViewTapGestureHandler = { [weak self] in
             self?.openZoomPosterScreen()
         }
         movieDetailsHeader.isHidden = true
-        movieDetailsHeader.translatesAutoresizingMaskIntoConstraints = false
         return movieDetailsHeader
     }()
     
@@ -75,6 +87,27 @@ final class MovieDetailsViewController: UIViewController, Alert {
     }
 }
 
+// MARK: - MovieDetailsView -
+
+extension MovieDetailsViewController: MovieDetailsView {
+    func showError(message: String? = nil) {
+        showAlert(message: message ?? AppConstant.defaultErrorMessage)
+    }
+    
+    func update(with title: String) {
+        updateTableView()
+        
+        UIView.animate(withDuration: 0) {
+            self.title = title
+            self.tableView.reloadData()
+        }
+    }
+
+    func showYouTubePlayer(with videoKeys: [String]) {
+        youTubePlayerView.showAndPlayVideo(with: videoKeys, on: self)
+    }
+}
+
 // MARK: - Private -
 
 private extension MovieDetailsViewController {
@@ -82,19 +115,12 @@ private extension MovieDetailsViewController {
         view.backgroundColor = .white
         
         view.addSubview(tableView)
-        tableView.tableHeaderView = movieDetailsHeaderView
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
-            movieDetailsHeaderView.widthAnchor.constraint(equalTo: tableView.widthAnchor),
-            movieDetailsHeaderView.heightAnchor.constraint(
-                equalTo: view.heightAnchor,
-                multiplier: 1/3.5
-            )
         ])
     }
     
@@ -122,25 +148,6 @@ private extension MovieDetailsViewController {
             movieDetailsHeaderView.configure(image: imageUrlString)
             movieDetailsHeaderView.isHidden = false
         }
-    }
-}
-
-extension MovieDetailsViewController: MovieDetailsView {
-    func showError(message: String? = nil) {
-        showAlert(message: message ?? AppConstant.defaultErrorMessage)
-    }
-    
-    func update(with title: String) {
-        updateTableView()
-        
-        UIView.animate(withDuration: 0) {
-            self.title = title
-            self.tableView.reloadData()
-        }
-    }
-
-    func showYouTubePlayer(with videoKeys: [String]) {
-        youTubePlayerView.showAndPlayVideo(with: videoKeys, on: self)
     }
 }
 
@@ -198,9 +205,9 @@ extension MovieDetailsViewController: UITableViewDelegate {
         _ tableView: UITableView,
         viewForHeaderInSection section: Int
     ) -> UIView? {
-        let section = presenter.getSection(by: section)
+        let currentSection = presenter.getSection(by: section)
         
-        switch section {
+        switch currentSection {
         case .attributeItem(let item):
             let header = tableView.dequeue(MovieDetailsAttributeHeaderView.self)
             header.configure(title: item.header.rawValue)
@@ -215,9 +222,9 @@ extension MovieDetailsViewController: UITableViewDelegate {
         _ tableView: UITableView,
         heightForHeaderInSection section: Int
     ) -> CGFloat {
-        let section = presenter.getSection(by: section)
+        let sectionType = presenter.getSection(by: section)
         
-        switch section {
+        switch sectionType {
         case .attributeItem:
             return UITableView.automaticDimension
         case .trailerItem:
@@ -238,5 +245,11 @@ extension MovieDetailsViewController: UITableViewDelegate {
             return UITableView.automaticDimension
         }
     }
-
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard let header = tableView.tableHeaderView as? MovieDetailsHeaderView else {
+            return
+        }
+        header.updateOnViewDidScroll(scrollView)
+    }
 }
