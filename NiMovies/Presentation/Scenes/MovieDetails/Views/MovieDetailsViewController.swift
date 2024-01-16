@@ -23,7 +23,10 @@ final class MovieDetailsViewController: UIViewController, Alert {
     // MARK: - UI Components -
     
     private lazy var tableView: UITableView = {
-        let tableView = UITableView()
+        let tableView = UITableView(
+            frame: .zero,
+            style: .grouped
+        )
         tableView.isScrollEnabled = true
         tableView.dataSource = self
         tableView.delegate = self

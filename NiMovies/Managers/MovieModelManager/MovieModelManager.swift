@@ -15,6 +15,7 @@ protocol MovieModelManager {
     func performMovieListUpdate(
         _ movieList: inout [MovieResult],
         group: DispatchGroup?,
+        with sort: MovieListSortType,
         errorHandler: @escaping (Error) -> Void
     )
     func performMovieGenresUpdate(
@@ -78,10 +79,11 @@ final class DefaultMovieModelManager: MovieModelManager {
     func performMovieListUpdate(
         _ movieList: inout [MovieResult],
         group: DispatchGroup? = nil,
+        with sort: MovieListSortType,
         errorHandler: @escaping (Error) -> Void
     ) {
         group?.enter()
-        let movieModels = getMovieListModels() ?? []
+        let movieModels = getMovieListModels(sortType: sort) ?? []
         
         let newMovieList = movieModels.compactMap { movie in
             return MovieResult(
@@ -157,14 +159,23 @@ private extension DefaultMovieModelManager {
         saveContext(errorHandler: errorHandler)
     }
     
-    func getMovieListModels() -> [MovieItem]? {
+    func getMovieListModels(sortType: MovieListSortType) -> [MovieItem]? {
         do {
             let fetchRequest = MovieItem.fetchRequest()
-            let sortDescriptor = NSSortDescriptor(
-                key: "popularity",
-                ascending: false
-            )
+            let sortKey: String
+
+            switch sortType {
+            case .popularityDescending:
+                sortKey = "popularity"
+            case .releaseDateDescending:
+                sortKey = "releaseDate"
+            case .voteAverageDescending:
+                sortKey = "voteAverage"
+            }
+            
+            let sortDescriptor = NSSortDescriptor(key: sortKey, ascending: false)
             fetchRequest.sortDescriptors = [sortDescriptor]
+            
             return try context.fetch(fetchRequest)
             
         } catch {
