@@ -97,8 +97,7 @@ private extension MovieDetailsTrailerTableViewCell {
                 constant: -Constant.defaultHorizontalInset
             ),
             trailerStackView.bottomAnchor.constraint(
-                equalTo: contentView.bottomAnchor,
-                constant: -Constant.defaultVerticalInset
+                equalTo: contentView.bottomAnchor
             ),
             
             trailerButton.widthAnchor.constraint(

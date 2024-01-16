@@ -220,7 +220,6 @@ private extension MovieListViewController {
      }
  }
 
-
 // MARK: - UICollectionViewDelegate -
 
 extension MovieListViewController: UICollectionViewDelegate {

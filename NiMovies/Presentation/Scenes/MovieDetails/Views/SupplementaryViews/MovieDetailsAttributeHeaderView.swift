@@ -9,7 +9,6 @@ import UIKit
 
 final class MovieDetailsAttributeHeaderView: UITableViewHeaderFooterView {
     private struct Constant {
-        static let defaultVerticalInset: CGFloat = 5
         static let defaultHorizontalInset: CGFloat = 20
     }
     
@@ -56,7 +55,7 @@ private extension MovieDetailsAttributeHeaderView {
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(
                 equalTo: contentView.topAnchor,
-                constant: Constant.defaultVerticalInset
+                constant: 10
             ),
             titleLabel.leadingAnchor.constraint(
                 equalTo: contentView.leadingAnchor,
@@ -68,7 +67,7 @@ private extension MovieDetailsAttributeHeaderView {
             ),
             titleLabel.bottomAnchor.constraint(
                 equalTo: contentView.bottomAnchor,
-                constant: -Constant.defaultVerticalInset
+                constant: -5
             ),
         ])
     }

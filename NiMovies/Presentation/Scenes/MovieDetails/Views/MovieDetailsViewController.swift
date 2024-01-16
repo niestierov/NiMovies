@@ -205,9 +205,9 @@ extension MovieDetailsViewController: UITableViewDelegate {
         _ tableView: UITableView,
         viewForHeaderInSection section: Int
     ) -> UIView? {
-        let section = presenter.getSection(by: section)
+        let currentSection = presenter.getSection(by: section)
         
-        switch section {
+        switch currentSection {
         case .attributeItem(let item):
             let header = tableView.dequeue(MovieDetailsAttributeHeaderView.self)
             header.configure(title: item.header.rawValue)
@@ -222,9 +222,9 @@ extension MovieDetailsViewController: UITableViewDelegate {
         _ tableView: UITableView,
         heightForHeaderInSection section: Int
     ) -> CGFloat {
-        let section = presenter.getSection(by: section)
+        let sectionType = presenter.getSection(by: section)
         
-        switch section {
+        switch sectionType {
         case .attributeItem:
             return UITableView.automaticDimension
         case .trailerItem:

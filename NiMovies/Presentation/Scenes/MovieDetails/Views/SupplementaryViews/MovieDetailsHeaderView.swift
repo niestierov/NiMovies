@@ -70,7 +70,7 @@ final class MovieDetailsHeaderView: UIView {
         
         contentViewHeight.constant = scrollView.contentInset.top
         contentView.clipsToBounds = offsetY <= .zero
-        
+
         imageViewBottom.constant = offsetY >= .zero ? .zero : -offsetY / 2
         imageViewHeight.constant = max(
             offsetY + scrollView.contentInset.top,
@@ -86,13 +86,12 @@ private extension MovieDetailsHeaderView {
         addSubview(contentView)
         contentView.addSubview(movieImageView)
         
-        contentViewHeight = contentView.heightAnchor.constraint(equalTo: heightAnchor)
-        imageViewBottom = movieImageView.bottomAnchor.constraint(
-            equalTo: contentView.bottomAnchor
-        )
-        imageViewHeight = movieImageView.heightAnchor.constraint(
-            equalTo: contentView.heightAnchor
-        )
+        contentViewHeight = contentView.heightAnchor
+            .constraint(equalTo: heightAnchor)
+        imageViewBottom = movieImageView.bottomAnchor
+            .constraint(equalTo: contentView.bottomAnchor)
+        imageViewHeight = movieImageView.heightAnchor
+            .constraint(equalTo: contentView.heightAnchor)
         
         NSLayoutConstraint.activate([
             centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
