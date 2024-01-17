@@ -50,6 +50,7 @@ final class MovieListViewController: UIViewController, Alert {
             frame: CGRect.zero,
             collectionViewLayout: makeCompositionalLayout()
         )
+        collectionView.keyboardDismissMode = .onDrag
         collectionView.backgroundColor = .clear
         collectionView.delegate = self
         collectionView.dataSource = self
@@ -283,10 +284,6 @@ extension MovieListViewController: UICollectionViewDelegate {
         if distanceFromBottom < Constant.paginationValueUntilLoad && !isTableViewUpdating {
             self.presenter.loadMoreMovies()
         }
-    }
-    
-    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        view.endEditing(true)
     }
 }
 
