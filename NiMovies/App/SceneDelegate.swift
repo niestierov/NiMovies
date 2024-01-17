@@ -23,8 +23,26 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         options connectionOptions: UIScene.ConnectionOptions
     ) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
-        
+
         appLaunchService.start(in: windowScene)
+    }
+}
+
+extension UINavigationController {
+    func setNavigationControllerAppearance() {
+        let appearance = UINavigationBarAppearance()
+        appearance.backgroundColor = .defaultBackground
+
+        appearance.titleTextAttributes = [
+            .foregroundColor: UIColor.default,
+            .font: UIFont.boldSystemFont(ofSize: 19)
+        ]
+        appearance.buttonAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor.clear
+        ]
+
+        navigationBar.tintColor = .default
+        navigationBar.standardAppearance = appearance
     }
 }
 

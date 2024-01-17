@@ -8,11 +8,11 @@
 import UIKit
 
 protocol MovieListAssembly {
-    func createMovieList() -> UINavigationController
+    func createMovieList() -> UIViewController
 }
 
 final class DefaultMovieListAssembly: MovieListAssembly {
-    func createMovieList() -> UINavigationController {
+    func createMovieList() -> UIViewController {
         let networkService: NetworkService = ServiceLocator.shared.resolve()
         let apiService: MovieListApiService = DefaultMovieListApiService(networkService: networkService)
         let loadingAnimationView: LoadingAnimationView = LoadingAnimationViewController()
@@ -29,7 +29,7 @@ final class DefaultMovieListAssembly: MovieListAssembly {
             presenter: presenter,
             loadingAnimationView: loadingAnimationView
         )
-        
-        return UINavigationController(rootViewController: viewController)
+
+        return viewController
     }
 }

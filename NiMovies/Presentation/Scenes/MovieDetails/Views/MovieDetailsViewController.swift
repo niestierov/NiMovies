@@ -112,7 +112,7 @@ extension MovieDetailsViewController: MovieDetailsView {
 
 private extension MovieDetailsViewController {
     func setupView() {
-        view.backgroundColor = .white
+        view.backgroundColor = .defaultBackground
         
         view.addSubview(tableView)
         

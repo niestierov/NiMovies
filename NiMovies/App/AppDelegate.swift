@@ -7,6 +7,7 @@
 
 import UIKit
 import CoreData
+import netfox
 
 @main
 final class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,6 +18,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        NFX.sharedInstance().start()
         return true
     }
     

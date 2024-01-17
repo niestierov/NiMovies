@@ -35,6 +35,8 @@ final class MovieListViewController: UIViewController, Alert {
     
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController()
+        searchController.searchBar.tintColor = .default
+        searchController.searchBar.searchTextField.textColor = .default
         searchController.searchBar.placeholder = "Search for a movie"
         searchController.searchBar.delegate = self
         searchController.searchBar.spellCheckingType = .no
@@ -62,7 +64,7 @@ final class MovieListViewController: UIViewController, Alert {
         let button = UIBarButtonItem()
         let image = UIImage(systemName: Constant.sortButtonImageName)
         button.image = image
-        button.tintColor = .black
+        button.tintColor = .default
         button.target = self
         button.action = #selector(didTapSortButton)
         return button
@@ -89,7 +91,7 @@ final class MovieListViewController: UIViewController, Alert {
             target: nil,
             action: nil
         )
-        button.tintColor = .black
+        button.tintColor = .default
         return button
     }()
     
@@ -127,10 +129,11 @@ private extension MovieListViewController {
         navigationItem.searchController = searchController
         navigationItem.rightBarButtonItem = sortButton
         navigationItem.backBarButtonItem = backBarButtonItem
+        navigationController?.navigationBar.barTintColor = .default
     }
     
     func setupView() {
-        view.backgroundColor = .white
+        view.backgroundColor = .defaultBackground
         
         view.addSubview(collectionView)
         

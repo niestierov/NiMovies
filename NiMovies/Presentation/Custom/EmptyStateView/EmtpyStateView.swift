@@ -33,7 +33,7 @@ final class EmtpyStateView: UIView {
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.text = "No results found."
-        label.textColor = .black
+        label.textColor = .default
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 20, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false

@@ -46,6 +46,7 @@
 		9A09B71F2B44437A003668B7 /* Alert+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B71E2B44437A003668B7 /* Alert+Extension.swift */; };
 		9A09B7212B4443A8003668B7 /* UICollectionViewLayoutProvider+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B7202B4443A8003668B7 /* UICollectionViewLayoutProvider+Extension.swift */; };
 		9A09B7242B4444EF003668B7 /* ImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A09B7232B4444EF003668B7 /* ImageService.swift */; };
+		9A3FAFF62B57F2EF00FBE90A /* netfox in Frameworks */ = {isa = PBXBuildFile; productRef = 9A3FAFF52B57F2EF00FBE90A /* netfox */; };
 		9A4836AC2B4E9CB800D97E7B /* Optional+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4836AB2B4E9CB800D97E7B /* Optional+Extension.swift */; };
 		9A4836AF2B4ED91E00D97E7B /* MovieDetailsHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4836AE2B4ED91E00D97E7B /* MovieDetailsHeaderView.swift */; };
 		9A4836B12B4EDBF700D97E7B /* MovieDetailsAttributeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4836B02B4EDBF700D97E7B /* MovieDetailsAttributeHeaderView.swift */; };
@@ -144,6 +145,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A3FAFF62B57F2EF00FBE90A /* netfox in Frameworks */,
 				9A09B6D42B43FE2B003668B7 /* Kingfisher in Frameworks */,
 				9A09B6D72B43FE35003668B7 /* Alamofire in Frameworks */,
 				9A09B6DA2B440088003668B7 /* Lottie in Frameworks */,
@@ -612,6 +614,7 @@
 				9A09B6D62B43FE35003668B7 /* Alamofire */,
 				9A09B6D92B440088003668B7 /* Lottie */,
 				9AD7F44D2B4AF61300DFCF2D /* YouTubeiOSPlayerHelper */,
+				9A3FAFF52B57F2EF00FBE90A /* netfox */,
 			);
 			productName = NiMovies;
 			productReference = 9A09B6BB2B43FB74003668B7 /* NiMovies.app */;
@@ -646,6 +649,7 @@
 				9A09B6D52B43FE35003668B7 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				9A09B6D82B440088003668B7 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 				9AD7F44C2B4AF61300DFCF2D /* XCRemoteSwiftPackageReference "youtube-ios-player-helper" */,
+				9A3FAFF42B57F2EF00FBE90A /* XCRemoteSwiftPackageReference "netfox" */,
 			);
 			productRefGroup = 9A09B6BC2B43FB74003668B7 /* Products */;
 			projectDirPath = "";
@@ -981,6 +985,14 @@
 				minimumVersion = 4.3.4;
 			};
 		};
+		9A3FAFF42B57F2EF00FBE90A /* XCRemoteSwiftPackageReference "netfox" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kasketis/netfox.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.21.0;
+			};
+		};
 		9AD7F44C2B4AF61300DFCF2D /* XCRemoteSwiftPackageReference "youtube-ios-player-helper" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/youtube/youtube-ios-player-helper.git";
@@ -1006,6 +1018,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9A09B6D82B440088003668B7 /* XCRemoteSwiftPackageReference "lottie-ios" */;
 			productName = Lottie;
+		};
+		9A3FAFF52B57F2EF00FBE90A /* netfox */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9A3FAFF42B57F2EF00FBE90A /* XCRemoteSwiftPackageReference "netfox" */;
+			productName = netfox;
 		};
 		9AD7F44D2B4AF61300DFCF2D /* YouTubeiOSPlayerHelper */ = {
 			isa = XCSwiftPackageProductDependency;

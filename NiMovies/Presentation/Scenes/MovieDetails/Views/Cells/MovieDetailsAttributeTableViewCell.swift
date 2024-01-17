@@ -17,7 +17,7 @@ final class MovieDetailsAttributeTableViewCell: UITableViewCell {
 
     private lazy var descriptionLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .black
+        label.textColor = .default
         label.numberOfLines = .zero
         label.font = .systemFont(ofSize: 18, weight: .regular)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -49,7 +49,7 @@ final class MovieDetailsAttributeTableViewCell: UITableViewCell {
 
 private extension MovieDetailsAttributeTableViewCell {
     func setupView() {
-        contentView.backgroundColor = .clear
+        contentView.backgroundColor = .defaultBackground
         
         contentView.addSubview(descriptionLabel)
         

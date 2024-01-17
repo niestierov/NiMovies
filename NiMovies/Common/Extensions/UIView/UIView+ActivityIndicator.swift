@@ -13,7 +13,7 @@ extension UIView {
     }
 
     func showActivityIndicator(
-        color: UIColor = .black,
+        color: UIColor = .default,
         style: UIActivityIndicatorView.Style = .medium
     ) {
         DispatchQueue.main.async { [weak self] in

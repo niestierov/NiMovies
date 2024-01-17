@@ -40,6 +40,22 @@ final class ImageScreenViewController: UIViewController {
         return scrollView
     }()
     
+    private lazy var closeButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = .white
+        button.addTarget(
+            self,
+            action: #selector(didTapCloseButton),
+            for: .touchUpInside
+        )
+        button.tintColor = .black
+        button.clipsToBounds = true
+        let image = UIImage(systemName: "xmark")
+        button.setImage(image, for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     // MARK: - Life Cycle -
     
     override func viewDidLoad() {
@@ -47,6 +63,12 @@ final class ImageScreenViewController: UIViewController {
         
         setupView()
         setupComponents()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        setupCloseButton()
     }
 }
 
@@ -94,6 +116,7 @@ private extension ImageScreenViewController {
     
     func setupComponents() {
         view.addSubview(scrollView)
+        view.addSubview(closeButton)
         scrollView.addSubview(imageView)
         
         NSLayoutConstraint.activate([
@@ -106,7 +129,25 @@ private extension ImageScreenViewController {
             imageView.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
             imageView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
             imageView.heightAnchor.constraint(equalTo: scrollView.heightAnchor),
+            
+            closeButton.topAnchor.constraint(
+                equalTo: view.topAnchor,
+                constant: 50
+            ),
+            closeButton.trailingAnchor.constraint(
+                equalTo: view.trailingAnchor,
+                constant: -20
+            ),
+            closeButton.widthAnchor.constraint(
+                equalTo: view.widthAnchor,
+                multiplier: 1/9
+            ),
+            closeButton.heightAnchor.constraint(equalTo: closeButton.widthAnchor)
         ])
+    }
+    
+    func setupCloseButton() {
+        closeButton.applyRoundedCorners(radius: closeButton.frame.width / 2)
     }
     
     func present(on parent: UIViewController) {
@@ -123,5 +164,10 @@ private extension ImageScreenViewController {
         if gesture.state == .ended {
             dismiss()
         }
+    }
+    
+    @objc
+    func didTapCloseButton() {
+        dismiss()
     }
 }
