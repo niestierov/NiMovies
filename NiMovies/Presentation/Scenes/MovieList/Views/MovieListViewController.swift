@@ -109,6 +109,12 @@ final class MovieListViewController: UIViewController, Alert {
         presenter.initialLoad()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        setupSortButton()
+    }
+    
     // MARK: - Internal -
     
     func inject(
@@ -117,6 +123,10 @@ final class MovieListViewController: UIViewController, Alert {
     ) {
         self.presenter = presenter
         self.loadingAnimationView = loadingAnimationView
+    }
+    
+    func setupSortButton() {
+        sortButton.isEnabled = presenter.getInternetConnectionStatus()
     }
 }
 
@@ -159,8 +169,7 @@ private extension MovieListViewController {
             style: .default
         ) { [weak self] currentAction in
             guard let self,
-                  type != presenter.sortType,
-                  presenter.validateInternetConnection() else {
+                  type != presenter.sortType else {
                 return
             }
             presenter.sortMovies(by: type)
