@@ -9,7 +9,7 @@ import UIKit
 
 extension UIView {
     private var activityIndicatorTag: Int {
-        return 999
+        return ObjectIdentifier(self).hashValue
     }
 
     func showActivityIndicator(

@@ -13,6 +13,8 @@ protocol MovieListView: AnyObject {
     func showError(message: String?)
     func showLoadingAnimation(completion: EmptyBlock?)
     func hideLoadingAnimation()
+    func showSearchIndicator()
+    func hideSearchIndicator()
 }
 
 final class MovieListViewController: UIViewController, Alert {
@@ -112,7 +114,7 @@ final class MovieListViewController: UIViewController, Alert {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        setupSortButton()
+        updateSortButton()
     }
     
     // MARK: - Internal -
@@ -123,10 +125,6 @@ final class MovieListViewController: UIViewController, Alert {
     ) {
         self.presenter = presenter
         self.loadingAnimationView = loadingAnimationView
-    }
-    
-    func setupSortButton() {
-        sortButton.isEnabled = presenter.getInternetConnectionStatus()
     }
 }
 
@@ -183,10 +181,19 @@ private extension MovieListViewController {
         return action
     }
     
+    func updateSortButton(isEnabled: Bool? = nil) {
+        sortButton.isEnabled = isEnabled != nil ? isEnabled! : presenter.getInternetConnectionStatus()
+    }
+    
     @objc
     func didTapSortButton() {
         if let popoverController = sortActionSheet.popoverPresentationController {
             popoverController.barButtonItem = sortButton
+        }
+        
+        guard presenter.validateInternetConnection() else {
+            updateSortButton(isEnabled: false)
+            return
         }
     
         present(sortActionSheet, animated: true, completion: nil)
@@ -230,6 +237,14 @@ private extension MovieListViewController {
      func hideLoadingAnimation() {
          loadingAnimationView.hide()
      }
+     
+     func showSearchIndicator() {
+         collectionView.showActivityIndicator()
+     }
+     
+     func hideSearchIndicator() {
+         collectionView.hideActivityIndicator()
+     }
  }
 
 // MARK: - UICollectionViewDelegate -
@@ -268,6 +283,10 @@ extension MovieListViewController: UICollectionViewDelegate {
         if distanceFromBottom < Constant.paginationValueUntilLoad && !isTableViewUpdating {
             self.presenter.loadMoreMovies()
         }
+    }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        view.endEditing(true)
     }
 }
 

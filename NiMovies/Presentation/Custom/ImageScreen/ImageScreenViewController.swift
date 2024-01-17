@@ -132,7 +132,7 @@ private extension ImageScreenViewController {
             
             closeButton.topAnchor.constraint(
                 equalTo: view.topAnchor,
-                constant: 50
+                constant: 65
             ),
             closeButton.trailingAnchor.constraint(
                 equalTo: view.trailingAnchor,
