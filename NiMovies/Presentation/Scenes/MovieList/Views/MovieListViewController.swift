@@ -13,6 +13,8 @@ protocol MovieListView: AnyObject {
     func showError(message: String?)
     func showLoadingAnimation(completion: EmptyBlock?)
     func hideLoadingAnimation()
+    func showSearchIndicator()
+    func hideSearchIndicator()
 }
 
 final class MovieListViewController: UIViewController, Alert {
@@ -35,6 +37,8 @@ final class MovieListViewController: UIViewController, Alert {
     
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController()
+        searchController.searchBar.tintColor = .default
+        searchController.searchBar.searchTextField.textColor = .default
         searchController.searchBar.placeholder = "Search for a movie"
         searchController.searchBar.delegate = self
         searchController.searchBar.spellCheckingType = .no
@@ -46,6 +50,7 @@ final class MovieListViewController: UIViewController, Alert {
             frame: CGRect.zero,
             collectionViewLayout: makeCompositionalLayout()
         )
+        collectionView.keyboardDismissMode = .onDrag
         collectionView.backgroundColor = .clear
         collectionView.delegate = self
         collectionView.dataSource = self
@@ -62,7 +67,7 @@ final class MovieListViewController: UIViewController, Alert {
         let button = UIBarButtonItem()
         let image = UIImage(systemName: Constant.sortButtonImageName)
         button.image = image
-        button.tintColor = .black
+        button.tintColor = .default
         button.target = self
         button.action = #selector(didTapSortButton)
         return button
@@ -89,7 +94,7 @@ final class MovieListViewController: UIViewController, Alert {
             target: nil,
             action: nil
         )
-        button.tintColor = .black
+        button.tintColor = .default
         return button
     }()
     
@@ -105,6 +110,12 @@ final class MovieListViewController: UIViewController, Alert {
         setupNavigationBar()
         setupView()
         presenter.initialLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        updateSortButton()
     }
     
     // MARK: - Internal -
@@ -127,10 +138,11 @@ private extension MovieListViewController {
         navigationItem.searchController = searchController
         navigationItem.rightBarButtonItem = sortButton
         navigationItem.backBarButtonItem = backBarButtonItem
+        navigationController?.navigationBar.barTintColor = .default
     }
     
     func setupView() {
-        view.backgroundColor = .white
+        view.backgroundColor = .defaultBackground
         
         view.addSubview(collectionView)
         
@@ -156,8 +168,7 @@ private extension MovieListViewController {
             style: .default
         ) { [weak self] currentAction in
             guard let self,
-                  type != presenter.sortType,
-                  presenter.validateInternetConnection() else {
+                  type != presenter.sortType else {
                 return
             }
             presenter.sortMovies(by: type)
@@ -171,10 +182,19 @@ private extension MovieListViewController {
         return action
     }
     
+    func updateSortButton(isEnabled: Bool? = nil) {
+        sortButton.isEnabled = isEnabled != nil ? isEnabled! : presenter.getInternetConnectionStatus()
+    }
+    
     @objc
     func didTapSortButton() {
         if let popoverController = sortActionSheet.popoverPresentationController {
             popoverController.barButtonItem = sortButton
+        }
+        
+        guard presenter.validateInternetConnection() else {
+            updateSortButton(isEnabled: false)
+            return
         }
     
         present(sortActionSheet, animated: true, completion: nil)
@@ -217,6 +237,14 @@ private extension MovieListViewController {
      
      func hideLoadingAnimation() {
          loadingAnimationView.hide()
+     }
+     
+     func showSearchIndicator() {
+         collectionView.showActivityIndicator()
+     }
+     
+     func hideSearchIndicator() {
+         collectionView.hideActivityIndicator()
      }
  }
 

@@ -217,14 +217,14 @@ private extension DefaultMovieListPresenter {
                 isInternetConnectionErrorAvailable = true
                 
             case .failure(let error):
-                handlFailureMovieListFetch(error: error)
+                handleFailureMovieFetch(error: error)
             }
             
             group?.leave()
         }
     }
     
-    func handlFailureMovieListFetch(error: Error) {
+    func handleFailureMovieFetch(error: Error) {
         guard let networkError = error as? NetworkError else {
             defaultErrorHandler(error)
             return
@@ -285,14 +285,16 @@ private extension DefaultMovieListPresenter {
                 guard let result else {
                     return
                 }
+                
                 if isNewSearch {
                     movieListViewState.movies = []
                     currentSearchQuery = query
+                    view.hideSearchIndicator()
                 }
                 updateMovieListViewState(with: result.results)
                 
             case .failure(let error):
-                defaultErrorHandler(error)
+                handleFailureMovieFetch(error: error)
             }
         }
     }
@@ -318,6 +320,11 @@ private extension DefaultMovieListPresenter {
             }
             return
         }
+        
+        guard query != currentSearchQuery else {
+            return
+        }
+        view.showSearchIndicator()
         
         searchWorkItem = DispatchWorkItem { [weak self] in
             guard let self else { return }
@@ -388,7 +395,6 @@ private extension DefaultMovieListPresenter {
             }
         } else {
             updateWithMovieModelData()
-            isInternetConnectionErrorAvailable = false
         }
         
         requestsGroup.notify(queue: .main) { [weak self] in

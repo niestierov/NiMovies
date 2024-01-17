@@ -28,7 +28,7 @@ final class MovieDetailsTrailerTableViewCell: UITableViewCell {
     private lazy var trailerTitleLabel: UILabel = {
         let label = UILabel()
         label.text = "Watch latest trailer:"
-        label.textColor = .black
+        label.textColor = .default
         label.font = .systemFont(ofSize: 21, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -40,7 +40,7 @@ final class MovieDetailsTrailerTableViewCell: UITableViewCell {
             UIImage(systemName: Constant.trailerButtonImageName),
             for: .normal
         )
-        button.tintColor = .white
+        button.tintColor = .default
         button.applyRoundedCorners(radius: 20)
         button.backgroundColor = .systemTeal
         button.clipsToBounds = true
@@ -76,7 +76,7 @@ final class MovieDetailsTrailerTableViewCell: UITableViewCell {
 
 private extension MovieDetailsTrailerTableViewCell {
     func setupView() {
-        contentView.backgroundColor = .clear
+        contentView.backgroundColor = .defaultBackground
         
         contentView.addSubview(trailerStackView)
         

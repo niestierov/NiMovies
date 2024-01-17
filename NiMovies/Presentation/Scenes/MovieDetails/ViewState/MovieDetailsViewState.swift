@@ -40,7 +40,6 @@ struct MovieDetailsViewState {
     }
     
     struct MovieDetailsHeader {
-        let backdrop: String
         let poster: String?
     }
     
@@ -104,18 +103,9 @@ extension MovieDetailsViewState {
             ),
             makeTrailerSection(isTrailerAvailable: trailerSectionAvailable)
         ]
+        let posterUrlString = MovieApiConstant.basePosterUrl + movieDetails.posterPath.setDefaultIfNilOrEmpty()
         
-        let backdropUrlString = MovieApiConstant.basePosterUrl + movieDetails.backdropPath.setDefaultIfNilOrEmpty()
-        
-        var posterUrlString: String?
-        if let posterPath = movieDetails.posterPath {
-            posterUrlString = MovieApiConstant.basePosterUrl + posterPath
-        }
-        
-        let header = MovieDetailsHeader(
-            backdrop: backdropUrlString,
-            poster: posterUrlString
-        )
+        let header = MovieDetailsHeader(poster: posterUrlString)
         let title = movieDetails.title.setDefaultIfNilOrEmpty("Title")
         
         return MovieDetailsViewState(

@@ -14,6 +14,12 @@ final class AppLaunchService {
     private var window: UIWindow?
     private let appConfiguration: AppConfiguration
     
+    private lazy var navigationController: UINavigationController = {
+        let controller = UINavigationController()
+        controller.setNavigationControllerAppearance()
+        return controller
+    }()
+    
     // MARK: - Init -
     
     init(appConfiguration: AppConfiguration) {
@@ -26,7 +32,9 @@ final class AppLaunchService {
         appConfiguration.configure()
         
         let movieListModule = DefaultMovieListAssembly().createMovieList()
-        configureWindow(with: movieListModule, in: windowScene)
+        navigationController.setViewControllers([movieListModule], animated: true)
+        
+        configureWindow(with: navigationController, in: windowScene)
     }
 
     // MARK: - Private -

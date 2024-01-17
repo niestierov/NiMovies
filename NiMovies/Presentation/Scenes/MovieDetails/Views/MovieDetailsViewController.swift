@@ -112,7 +112,7 @@ extension MovieDetailsViewController: MovieDetailsView {
 
 private extension MovieDetailsViewController {
     func setupView() {
-        view.backgroundColor = .white
+        view.backgroundColor = .defaultBackground
         
         view.addSubview(tableView)
         
@@ -144,7 +144,7 @@ private extension MovieDetailsViewController {
             tableView.backgroundView = tableEmptyStateView
         } else {
             tableView.backgroundView = nil
-            let imageUrlString = presenter.getHeader()?.backdrop ?? ""
+            let imageUrlString = presenter.getHeader()?.poster ?? ""
             movieDetailsHeaderView.configure(image: imageUrlString)
             movieDetailsHeaderView.isHidden = false
         }

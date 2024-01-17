@@ -16,7 +16,7 @@ final class MovieDetailsAttributeHeaderView: UITableViewHeaderFooterView {
 
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .black
+        label.textColor = .default
         label.numberOfLines = .zero
         label.font = .systemFont(ofSize: 21, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false

@@ -155,10 +155,9 @@ private extension MovieListCollectionViewCell {
         
         contentView.applyRoundedCorners(radius: Constant.cornerRadius)
         contentView.applyShadow(
-            color: UIColor.black.cgColor,
+            color: UIColor.default.cgColor,
             opacity: 0.5,
-            offset: CGSize(width: .zero, height: 2),
-            radius: 4
+            radius: 3
         )
         contentView.layoutIfNeeded()
         

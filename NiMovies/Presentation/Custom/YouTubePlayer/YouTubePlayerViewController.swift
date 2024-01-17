@@ -30,6 +30,22 @@ final class YouTubePlayerViewController: UIViewController {
         return playerView
     }()
     
+    private lazy var closeButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = .white
+        button.addTarget(
+            self,
+            action: #selector(didTapCloseButton),
+            for: .touchUpInside
+        )
+        button.tintColor = .black
+        button.clipsToBounds = true
+        let image = UIImage(systemName: "xmark")
+        button.setImage(image, for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     // MARK: - Life Cycle -
     
     override func viewDidLoad() {
@@ -37,6 +53,12 @@ final class YouTubePlayerViewController: UIViewController {
         
         setupView()
         setupComponents()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        setupCloseButton()
     }
 }
 
@@ -50,7 +72,7 @@ extension YouTubePlayerViewController: YouTubePlayerView {
         videoKeys = keys
         present(on: parent)
         
-        view.showActivityIndicator(color: .white)
+        view.showActivityIndicator(color: .default)
         loadNextVideo()
     }
 }
@@ -71,12 +93,27 @@ private extension YouTubePlayerViewController {
     
     func setupComponents() {
         view.addSubview(playerView)
+        view.addSubview(closeButton)
         
         NSLayoutConstraint.activate([
             playerView.topAnchor.constraint(equalTo: view.topAnchor),
             playerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             playerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            playerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            playerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            closeButton.topAnchor.constraint(
+                equalTo: view.topAnchor,
+                constant: 65
+            ),
+            closeButton.trailingAnchor.constraint(
+                equalTo: view.trailingAnchor,
+                constant: -20
+            ),
+            closeButton.widthAnchor.constraint(
+                equalTo: view.widthAnchor,
+                multiplier: 1/9
+            ),
+            closeButton.heightAnchor.constraint(equalTo: closeButton.widthAnchor)
         ])
     }
 
@@ -92,6 +129,10 @@ private extension YouTubePlayerViewController {
         parent.present(self, animated: true, completion: nil)
     }
     
+    func setupCloseButton() {
+        closeButton.applyRoundedCorners(radius: closeButton.frame.width / 2)
+    }
+    
     func dismiss() {
         dismiss(animated: true, completion: nil)
     }
@@ -101,6 +142,11 @@ private extension YouTubePlayerViewController {
         if gesture.state == .ended {
             dismiss()
         }
+    }
+    
+    @objc
+    func didTapCloseButton() {
+        dismiss()
     }
 }
 

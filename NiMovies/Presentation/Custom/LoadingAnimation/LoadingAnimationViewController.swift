@@ -45,7 +45,7 @@ final class LoadingAnimationViewController: UIViewController {
 
 private extension LoadingAnimationViewController {
     func setupView() {
-        view.backgroundColor = .white
+        view.backgroundColor = .defaultBackground
         
         view.addSubview(loadingAnimationView)
         
