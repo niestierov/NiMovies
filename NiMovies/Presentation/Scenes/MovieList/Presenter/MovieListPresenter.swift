@@ -334,7 +334,7 @@ private extension DefaultMovieListPresenter {
             }
         }
         
-        DispatchQueue.global().asyncAfter(
+        DispatchQueue.global(qos: .userInteractive).asyncAfter(
             deadline: .now() + 0.5,
             execute: searchWorkItem!
         )
