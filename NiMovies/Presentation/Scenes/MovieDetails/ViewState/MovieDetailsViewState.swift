@@ -70,7 +70,10 @@ extension MovieDetailsViewState {
         
         let titleSectionDescription = movieDetails.title.setDefaultIfNilOrEmpty("Title unknown")
         let genresSectionDescription = genres.setDefaultIfNilOrEmpty("Genres unknown")
-        let releaseSectionDescription = movieDetails.releaseDate.setDefaultIfNilOrEmpty("Release unknown")
+        
+        let releaseDate = movieDetails.releaseDate?.asFormattedString()
+        let releaseSectionDescription = releaseDate.setDefaultIfNilOrEmpty("Release unknown")
+        
         let descriptionSectionDescription = movieDetails.overview.setDefaultIfNilOrEmpty("Description unknown")
         let ratingSectionDescription = (movieDetails.voteAverage ?? .zero).stringValue
         let productionSectionDescription = production.setDefaultIfNilOrEmpty("Production unknown")

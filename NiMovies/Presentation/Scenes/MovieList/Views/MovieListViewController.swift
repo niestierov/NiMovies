@@ -102,6 +102,15 @@ final class MovieListViewController: UIViewController, Alert {
         return EmtpyStateView()
     }()
     
+    private lazy var viewTapGesture: UITapGestureRecognizer = {
+        let tapGesture = UITapGestureRecognizer(
+            target: self,
+            action: #selector(didTapOnScreen)
+        )
+        tapGesture.cancelsTouchesInView = false
+        return tapGesture
+    }()
+    
     // MARK: - Life Cycle -
     
     override func viewDidLoad() {
@@ -142,6 +151,7 @@ private extension MovieListViewController {
     }
     
     func setupView() {
+        view.addGestureRecognizer(viewTapGesture)
         view.backgroundColor = .defaultBackground
         
         view.addSubview(collectionView)
@@ -181,9 +191,15 @@ private extension MovieListViewController {
         
         return action
     }
-    
+
     func updateSortButton(isEnabled: Bool? = nil) {
         sortButton.isEnabled = isEnabled != nil ? isEnabled! : presenter.getInternetConnectionStatus()
+        sortButton.tintColor = sortButton.isEnabled ? .default : .clear
+    }
+    
+    @objc
+    func didTapOnScreen() {
+        searchController.searchBar.endEditing(true)
     }
     
     @objc
