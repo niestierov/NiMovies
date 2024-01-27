@@ -7,16 +7,6 @@
 
 import UIKit
 
-protocol MovieListView: AnyObject {
-    func update()
-    func appendItems(_ itemsCount: Int)
-    func showError(message: String?)
-    func showLoadingAnimation(completion: EmptyBlock?)
-    func hideLoadingAnimation()
-    func showSearchIndicator()
-    func hideSearchIndicator()
-}
-
 final class MovieListViewController: UIViewController, Alert {
     private struct Constant {
         static let sortButtonImageName = "arrow.up.and.down.text.horizontal"
@@ -29,7 +19,7 @@ final class MovieListViewController: UIViewController, Alert {
     
     // MARK: - Properties -
     
-    private var presenter: MovieListPresenter!
+    private var viewModel: MovieListViewModel!
     private var loadingAnimationView: LoadingAnimationView!
     private lazy var isTableViewUpdating = true
     
@@ -116,9 +106,10 @@ final class MovieListViewController: UIViewController, Alert {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setupViewModelBinding()
         setupNavigationBar()
         setupView()
-        presenter.initialLoad()
+        viewModel.initialLoad()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -130,10 +121,10 @@ final class MovieListViewController: UIViewController, Alert {
     // MARK: - Internal -
     
     func inject(
-        presenter: MovieListPresenter,
+        viewModel: MovieListViewModel,
         loadingAnimationView: LoadingAnimationView
     ) {
-        self.presenter = presenter
+        self.viewModel = viewModel
         self.loadingAnimationView = loadingAnimationView
     }
 }
@@ -141,6 +132,49 @@ final class MovieListViewController: UIViewController, Alert {
 // MARK: - Private -
 
 private extension MovieListViewController {
+    func setupViewModelBinding() {
+        viewModel.movieListViewState.shouldShowLoadingAnimation.bind { [weak self] shouldShow in
+            guard let self else { return }
+            
+            if shouldShow {
+                loadingAnimationView.start(on: self) { [weak self] in
+                    self?.viewModel.loadingAnimationCompletionHandler()
+                }
+                return
+            }
+            loadingAnimationView.hide()
+        }
+        
+        viewModel.movieListViewState.movies.bind { [weak self] movies in
+            guard let self else { return }
+            
+            let isMoviesEmpty = viewModel.movieListViewState.movies.value.isEmpty
+            let isInitial = viewModel.isInitialMoviesUpdate
+
+            if isMoviesEmpty && !isInitial {
+                return
+            } else if isMoviesEmpty || viewModel.isInitialMoviesUpdate {
+                update()
+            } else {
+                appendItems(viewModel.lastMovieResult.count)
+            }
+        }
+        
+        viewModel.movieListViewState.shouldShowSearchIndicator.bind { [weak self] shouldShow in
+            if shouldShow {
+                self?.collectionView.showActivityIndicator()
+            } else {
+                self?.collectionView.hideActivityIndicator()
+            }
+        }
+        
+        viewModel.movieListViewState.showError.bind { [weak self] error in
+            if let error {
+                self?.showError(message: error)
+            }
+        }
+    }
+    
     func setupNavigationBar() {
         title = Constant.titleName
         navigationItem.hidesSearchBarWhenScrolling = false
@@ -165,7 +199,7 @@ private extension MovieListViewController {
     }
     
     func addEmptyViewIfNeeded() {
-        let isNeeded = presenter.getMovieListCount() == .zero
+        let isNeeded = viewModel.getMovieListCount() == .zero
         collectionView.backgroundView = isNeeded ? collectionEmptyView : nil
     }
     
@@ -178,23 +212,50 @@ private extension MovieListViewController {
             style: .default
         ) { [weak self] currentAction in
             guard let self,
-                  type != presenter.sortType else {
+                  type != viewModel.sortType else {
                 return
             }
-            presenter.sortMovies(by: type)
+            viewModel.sortMovies(by: type)
             
             for action in controller.actions {
                 action.isChecked = action == currentAction
             }
         }
-        action.isChecked = type == presenter.sortType
+        action.isChecked = type == viewModel.sortType
         
         return action
     }
 
     func updateSortButton(isEnabled: Bool? = nil) {
-        sortButton.isEnabled = isEnabled != nil ? isEnabled! : presenter.getInternetConnectionStatus()
+        sortButton.isEnabled = isEnabled != nil ? isEnabled! : viewModel.getInternetConnectionStatus()
         sortButton.tintColor = sortButton.isEnabled ? .default : .clear
+    }
+    
+    func update() {
+        collectionView.setContentOffset(.zero, animated: false)
+        addEmptyViewIfNeeded()
+        isTableViewUpdating = true
+        
+        UIView.animate(withDuration: .zero) {
+            self.collectionView.reloadData()
+        } completion: { _ in
+            self.isTableViewUpdating = false
+        }
+    }
+    
+    func appendItems(_ itemsCount: Int) {
+        let currentItemsCount = collectionView.numberOfItems(inSection: .zero)
+        let newItemsCount = currentItemsCount + itemsCount
+        let indexPaths = (currentItemsCount..<newItemsCount).map {
+            IndexPath(item: $0, section: .zero)
+        }
+        collectionView.performBatchUpdates {
+            collectionView.insertItems(at: indexPaths)
+        }
+    }
+    
+    func showError(message: String? = nil) {
+        showAlert(message: message ?? AppConstant.defaultErrorMessage)
     }
     
     @objc
@@ -208,7 +269,7 @@ private extension MovieListViewController {
             popoverController.barButtonItem = sortButton
         }
         
-        guard presenter.validateInternetConnection() else {
+        guard viewModel.validateInternetConnection() else {
             updateSortButton(isEnabled: false)
             return
         }
@@ -217,53 +278,6 @@ private extension MovieListViewController {
     }
 }
 
- // MARK: - MovieListView -
-
- extension MovieListViewController: MovieListView {
-     func update() {
-         collectionView.setContentOffset(.zero, animated: false)
-         addEmptyViewIfNeeded()
-         isTableViewUpdating = true
-         
-         UIView.animate(withDuration: .zero) {
-             self.collectionView.reloadData()
-         } completion: { _ in
-             self.isTableViewUpdating = false
-         }
-     }
-     
-     func appendItems(_ itemsCount: Int) {
-         let currentItemsCount = collectionView.numberOfItems(inSection: .zero)
-         let newItemsCount = currentItemsCount + itemsCount
-         let indexPaths = (currentItemsCount..<newItemsCount).map {
-             IndexPath(item: $0, section: .zero)
-         }
-         collectionView.performBatchUpdates {
-             collectionView.insertItems(at: indexPaths)
-         }
-     }
-     
-     func showError(message: String? = nil) {
-         showAlert(message: message ?? AppConstant.defaultErrorMessage)
-     }
-     
-     func showLoadingAnimation(completion: EmptyBlock? = nil) {
-         loadingAnimationView.start(on: self, completion: completion)
-     }
-     
-     func hideLoadingAnimation() {
-         loadingAnimationView.hide()
-     }
-     
-     func showSearchIndicator() {
-         collectionView.showActivityIndicator()
-     }
-     
-     func hideSearchIndicator() {
-         collectionView.hideActivityIndicator()
-     }
- }
-
 // MARK: - UICollectionViewDelegate -
 
 extension MovieListViewController: UICollectionViewDelegate {
@@ -271,7 +285,7 @@ extension MovieListViewController: UICollectionViewDelegate {
         _ collectionView: UICollectionView,
         didSelectItemAt indexPath: IndexPath
     ) {
-        presenter.didSelectMovie(at: indexPath.item)
+        viewModel.didSelectMovie(at: indexPath.item)
     }
     
     func collectionView(
@@ -298,7 +312,7 @@ extension MovieListViewController: UICollectionViewDelegate {
         let distanceFromBottom = contentHeight - offsetY - boundsHeight
 
         if distanceFromBottom < Constant.paginationValueUntilLoad && !isTableViewUpdating {
-            self.presenter.loadMoreMovies()
+            viewModel.loadMoreMovies()
         }
     }
 }
@@ -308,7 +322,7 @@ extension MovieListViewController: UICollectionViewDataSource {
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
-        presenter.getMovieListCount()
+        viewModel.getMovieListCount()
     }
     
     func collectionView(
@@ -319,7 +333,7 @@ extension MovieListViewController: UICollectionViewDataSource {
             cellType: MovieListCollectionViewCell.self,
             at: indexPath
         )
-        guard let movie = presenter.getMovie(at: indexPath.item) else {
+        guard let movie = viewModel.getMovie(at: indexPath.item) else {
             return cell
         }
         
@@ -333,15 +347,15 @@ extension MovieListViewController: UICollectionViewDataSource {
 
 extension MovieListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        presenter.performMovieSearch(query: searchText)
+        viewModel.performMovieSearch(query: searchText)
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        presenter.performMovieSearch(query: searchBar.text)
+        viewModel.performMovieSearch(query: searchBar.text)
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        presenter.performMovieSearch(query: nil)
+        viewModel.performMovieSearch(query: nil)
     }
 }
 
@@ -374,10 +388,10 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
     }
     
     private func addFooterIfNeeded(for section: NSCollectionLayoutSection) {
-        let isConnectedToInternet = presenter.getInternetConnectionStatus()
-        let isLoading = presenter.isRequestLoading
-        let movieListCount = presenter.getMovieListCount()
-        let isRequestAvailable = presenter.isRequestAvailable()
+        let isConnectedToInternet = viewModel.getInternetConnectionStatus()
+        let isLoading = viewModel.isRequestLoading
+        let movieListCount = viewModel.getMovieListCount()
+        let isRequestAvailable = viewModel.isRequestAvailable()
 
         if (isLoading || movieListCount > .zero)
             && isConnectedToInternet && isRequestAvailable {
@@ -386,6 +400,8 @@ extension MovieListViewController: UICollectionViewLayoutProvider {
                 height: .absolute(50)
             )
             section.boundarySupplementaryItems = [footer]
+        } else {
+            section.boundarySupplementaryItems = []
         }
     }
 }

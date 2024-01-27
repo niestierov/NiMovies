@@ -7,16 +7,11 @@
 
 import UIKit
 
-protocol MovieDetailsView: AnyObject {
-    func update(with title: String)
-    func showError(message: String?)
-}
-
 final class MovieDetailsViewController: UIViewController, Alert {
     
     // MARK: - Properties -
     
-    private var presenter: MovieDetailsPresenter!
+    private var viewModel: MovieDetailsViewModel!
     private var imageScreenView: ImageScreenView!
     private var youTubePlayerView: YouTubePlayerView!
     
@@ -70,26 +65,79 @@ final class MovieDetailsViewController: UIViewController, Alert {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setupViewModelBinding()
         setupView()
-        presenter.initialLoad()
+        viewModel.initialLoad()
     }
     
     // MARK: - Internal -
     
     func inject(
-        presenter: MovieDetailsPresenter,
+        viewModel: MovieDetailsViewModel,
         imageScreenView: ImageScreenView,
         youTubePlayerView: YouTubePlayerView
     ) {
-        self.presenter = presenter
+        self.viewModel = viewModel
         self.imageScreenView = imageScreenView
         self.youTubePlayerView = youTubePlayerView
     }
 }
 
-// MARK: - MovieDetailsView -
+// MARK: - Private -
 
-extension MovieDetailsViewController: MovieDetailsView {
+private extension MovieDetailsViewController {
+    func setupViewModelBinding() {
+        viewModel.movieDetailsViewState.bind { [weak self] viewState in
+            guard let self else {
+                return
+            }
+            update(with: viewState.title)
+            
+            if let error = viewState.showError {
+                showError(message: error)
+            }
+        }
+    }
+    
+    func setupView() {
+        view.backgroundColor = .defaultBackground
+        
+        view.addSubview(tableView)
+        
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+    }
+    
+    func openZoomPosterScreen() {
+        guard let posterUrl = viewModel.getPosterUrl() else {
+            return
+        }
+        imageScreenView.show(with: posterUrl, on: self)
+    }
+    
+    func playTrailer() {
+        guard let videoKeys = viewModel.getVideoKeys() else {
+            showError(message: AppConstant.defaultErrorMessage)
+            return
+        }
+        youTubePlayerView.showAndPlayVideo(with: videoKeys, on: self)
+    }
+    
+    func updateTableView() {
+        if viewModel.getSectionCount() == .zero {
+            tableView.backgroundView = tableEmptyStateView
+        } else {
+            tableView.backgroundView = nil
+            let imageUrlString = viewModel.getHeader()?.poster ?? ""
+            movieDetailsHeaderView.configure(image: imageUrlString)
+            movieDetailsHeaderView.isHidden = false
+        }
+    }
+    
     func showError(message: String? = nil) {
         showAlert(message: message ?? AppConstant.defaultErrorMessage)
     }
@@ -108,49 +156,6 @@ extension MovieDetailsViewController: MovieDetailsView {
     }
 }
 
-// MARK: - Private -
-
-private extension MovieDetailsViewController {
-    func setupView() {
-        view.backgroundColor = .defaultBackground
-        
-        view.addSubview(tableView)
-        
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-        ])
-    }
-    
-    func openZoomPosterScreen() {
-        guard let posterUrl = presenter.getPosterUrl() else {
-            return
-        }
-        imageScreenView.show(with: posterUrl, on: self)
-    }
-    
-    func playTrailer() {
-        guard let videoKeys = presenter.getVideoKeys() else {
-            showError(message: AppConstant.defaultErrorMessage)
-            return
-        }
-        youTubePlayerView.showAndPlayVideo(with: videoKeys, on: self)
-    }
-    
-    func updateTableView() {
-        if presenter.getSectionCount() == .zero {
-            tableView.backgroundView = tableEmptyStateView
-        } else {
-            tableView.backgroundView = nil
-            let imageUrlString = presenter.getHeader()?.poster ?? ""
-            movieDetailsHeaderView.configure(image: imageUrlString)
-            movieDetailsHeaderView.isHidden = false
-        }
-    }
-}
-
 // MARK: - UITableViewDataSource -
 
 extension MovieDetailsViewController: UITableViewDataSource {
@@ -162,14 +167,14 @@ extension MovieDetailsViewController: UITableViewDataSource {
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return presenter.getSectionCount()
+        return viewModel.getSectionCount()
     }
     
     func tableView(
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-        let section = presenter.getSection(by: indexPath.section)
+        let section = viewModel.getSection(by: indexPath.section)
     
         switch section {
         case .attributeItem(let item):
@@ -205,7 +210,7 @@ extension MovieDetailsViewController: UITableViewDelegate {
         _ tableView: UITableView,
         viewForHeaderInSection section: Int
     ) -> UIView? {
-        let currentSection = presenter.getSection(by: section)
+        let currentSection = viewModel.getSection(by: section)
         
         switch currentSection {
         case .attributeItem(let item):
@@ -222,7 +227,7 @@ extension MovieDetailsViewController: UITableViewDelegate {
         _ tableView: UITableView,
         heightForHeaderInSection section: Int
     ) -> CGFloat {
-        let sectionType = presenter.getSection(by: section)
+        let sectionType = viewModel.getSection(by: section)
         
         switch sectionType {
         case .attributeItem:
@@ -236,7 +241,7 @@ extension MovieDetailsViewController: UITableViewDelegate {
         _ tableView: UITableView,
         heightForRowAt indexPath: IndexPath
     ) -> CGFloat {
-        let section = presenter.getSection(by: indexPath.section)
+        let section = viewModel.getSection(by: indexPath.section)
         
         switch section {
         case .trailerItem(let item):

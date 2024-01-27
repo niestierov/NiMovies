@@ -22,14 +22,13 @@ final class DefaultMovieDetailsAssembly: MovieDetailsAssembly {
         let youTubePlayerView: YouTubePlayerView = YouTubePlayerViewController()
         
         let viewController = MovieDetailsViewController()
-        let presenter = DefaultMovieDetailsPresenter(
-            view: viewController,
+        let viewModel = DefaultMovieDetailsViewModel(
             apiService: apiService,
             configuration: configuration
         )
         
         viewController.inject(
-            presenter: presenter,
+            viewModel: viewModel,
             imageScreenView: imageScreenView,
             youTubePlayerView: youTubePlayerView
         )
