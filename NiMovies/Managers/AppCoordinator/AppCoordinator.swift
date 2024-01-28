@@ -1,5 +1,5 @@
 //
-//  AppLaunchService.swift
+//  AppCoordinator.swift
 //  NiMovies
 //
 //  Created by Denys Niestierov on 02.01.2024.
@@ -7,13 +7,11 @@
 
 import UIKit
 
-final class AppLaunchService {
+final class AppCoordinator {
     
     // MARK: - Properties -
     
-    private var window: UIWindow?
     private let appConfiguration: AppConfiguration
-    
     private lazy var navigationController: UINavigationController = {
         let controller = UINavigationController()
         controller.setNavigationControllerAppearance()
@@ -28,25 +26,19 @@ final class AppLaunchService {
 
     // MARK: - Internal -
     
-    func start(in windowScene: UIWindowScene) {
+    func start() {
         appConfiguration.configure()
         
         let movieListModule = DefaultMovieListAssembly().createMovieList()
         navigationController.setViewControllers([movieListModule], animated: true)
-        
-        configureWindow(with: navigationController, in: windowScene)
     }
 
-    // MARK: - Private -
-
-    private func configureWindow(
-        with navigationController: UINavigationController,
+    func configureWindow(
+        with window: inout UIWindow?,
         in windowScene: UIWindowScene
     ) {
-        let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = navigationController
-        window.makeKeyAndVisible()
-
-        self.window = window
+        window = UIWindow(windowScene: windowScene)
+        window?.rootViewController = navigationController
+        window?.makeKeyAndVisible()
     }
 }

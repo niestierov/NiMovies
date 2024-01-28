@@ -46,6 +46,8 @@ struct MovieDetailsViewState {
     let title: String
     let header: MovieDetailsHeader?
     let sections: [Section]
+    
+    var showError: String? = nil
 }
 
 extension MovieDetailsViewState {

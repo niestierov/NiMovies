@@ -15,8 +15,12 @@ struct MovieListViewState {
         let title: String
         let voteAverage: String
     }
+    typealias MovieResultError = (Bool, String?)
     
-    var movies: [Movie] = []
+    var movies = Bindable([Movie]())
+    var showError: Bindable<String?> = Bindable(nil)
+    var shouldShowSearchIndicator = Bindable(false)
+    var shouldShowLoadingAnimation = Bindable(false)
 }
 
 extension MovieListViewState {    
@@ -42,6 +46,6 @@ extension MovieListViewState {
                 voteAverage: voteAverage
             )
         }
-        movies.append(contentsOf: additionalMovies)
+        movies.value.append(contentsOf: additionalMovies)
     }
 }

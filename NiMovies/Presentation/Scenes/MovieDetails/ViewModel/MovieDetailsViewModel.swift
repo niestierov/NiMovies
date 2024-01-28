@@ -1,5 +1,5 @@
 //
-//  MovieDetailsPresenter.swift
+//  MovieDetailsViewModel.swift
 //  NiMovies
 //
 //  Created by Denys Niestierov on 06.01.2024.
@@ -13,17 +13,17 @@ struct MovieDetailsConfiguration {
     let title: String
 }
 
-protocol MovieDetailsPresenter {
+protocol MovieDetailsViewModel {
+    var movieDetailsViewState: Bindable<MovieDetailsViewState> { get set }
     func initialLoad()
     func getPosterUrl() -> String?
     func getVideoKeys() -> [String]?
     func getSectionCount() -> Int
     func getSection(by section: Int) -> MovieDetailsViewState.Section
     func getHeader() -> MovieDetailsViewState.MovieDetailsHeader?
-    func getTitle() -> String
 }
 
-final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
+final class DefaultMovieDetailsViewModel: MovieDetailsViewModel {
     private struct Constant {
         static let youTubeTitle = "YouTube"
         static let suitableVideoTypes = ["Trailer", "Teaser"]
@@ -31,10 +31,9 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     
     // MARK: - Properties -
     
-    private unowned let view: MovieDetailsView
+    lazy var movieDetailsViewState = Bindable(MovieDetailsViewState.makeInitialViewState(with: configuration))
     private let apiService: MovieDetailsApiService
     private let configuration: MovieDetailsConfiguration
-    private(set) lazy var movieDetailsViewState: MovieDetailsViewState = MovieDetailsViewState.makeInitialViewState(with: configuration)
     private let requestGroup = DispatchGroup()
     private var movieDetails: MovieDetailsResult?
     private var videoKeys: [String]?
@@ -42,11 +41,9 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     // MARK: - Init -
     
     init(
-        view: MovieDetailsView,
         apiService: MovieDetailsApiService,
         configuration: MovieDetailsConfiguration
     ) {
-        self.view = view
         self.apiService = apiService
         self.configuration = configuration
     }
@@ -58,23 +55,19 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
     }
     
     func getSectionCount() -> Int {
-        movieDetailsViewState.sections.count
+        movieDetailsViewState.value.sections.count
     }
     
     func getSection(by section: Int) -> MovieDetailsViewState.Section {
-        movieDetailsViewState.sections[section]
+        movieDetailsViewState.value.sections[section]
     }
     
     func getHeader() -> MovieDetailsViewState.MovieDetailsHeader? {
-        movieDetailsViewState.header
-    }
-    
-    func getTitle() -> String {
-        movieDetailsViewState.title
+        movieDetailsViewState.value.header
     }
     
     func getPosterUrl() -> String? {
-        movieDetailsViewState.header?.poster ?? nil
+        movieDetailsViewState.value.header?.poster ?? nil
     }
     
     func getVideoKeys() -> [String]? {
@@ -84,7 +77,7 @@ final class DefaultMovieDetailsPresenter: MovieDetailsPresenter {
 
 // MARK: - Private -
 
-private extension DefaultMovieDetailsPresenter {
+private extension DefaultMovieDetailsViewModel {
     func fetchMovieDetails(group: DispatchGroup? = nil) {
         group?.enter()
         
@@ -99,7 +92,7 @@ private extension DefaultMovieDetailsPresenter {
                 self.movieDetails = movieDetails
 
             case.failure(let error):
-                view.showError(message: error.localizedDescription)
+                movieDetailsViewState.value.showError = error.localizedDescription
             }
             group?.leave()
         }
@@ -121,8 +114,8 @@ private extension DefaultMovieDetailsPresenter {
                 }
                 self.videoKeys = keys
                 
-            case .failure(let error):
-                view.showError(message: error.localizedDescription)
+            case .failure:
+                break
             }
             group?.leave()
         }
@@ -130,12 +123,11 @@ private extension DefaultMovieDetailsPresenter {
     
     func updateViewState() {
         if let movieDetails {
-            movieDetailsViewState = MovieDetailsViewState.makeViewState(
+            movieDetailsViewState.value = MovieDetailsViewState.makeViewState(
                 movieDetails: movieDetails,
                 videoKeys: videoKeys
             )
         }
-        view.update(with: getTitle())
     }
     
     func getVideoKeys(by movieVideo: [MovieVideo]) -> [String]? {

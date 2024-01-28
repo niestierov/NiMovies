@@ -18,15 +18,14 @@ final class DefaultMovieListAssembly: MovieListAssembly {
         let loadingAnimationView: LoadingAnimationView = LoadingAnimationViewController()
         
         let viewController = MovieListViewController()
-        let router: MovieListRouter = DefaultMovieListRouter(root: viewController)
-        let presenter = DefaultMovieListPresenter(
-            view: viewController,
-            router: router,
+        let coordinator: MovieListCoordinator = DefaultMovieListCoordinator(root: viewController)
+        let viewModel = DefaultMovieListViewModel(
+            coordinator: coordinator,
             apiService: apiService
         )
         
         viewController.inject(
-            presenter: presenter,
+            viewModel: viewModel,
             loadingAnimationView: loadingAnimationView
         )
 
