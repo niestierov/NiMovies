@@ -13,7 +13,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     var window: UIWindow?
     private lazy var appConfiguration: AppConfiguration = DefaultAppConfiguration()
-    private lazy var appLaunchService = AppLaunchService(appConfiguration: appConfiguration)
+    private lazy var appCoordinator = AppCoordinator(appConfiguration: appConfiguration)
     
     // MARK: - Internal -
     
@@ -24,7 +24,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     ) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
 
-        appLaunchService.start(in: windowScene)
+        appCoordinator.start()
+        appCoordinator.configureWindow(with: &window, in: windowScene)
     }
 }
 

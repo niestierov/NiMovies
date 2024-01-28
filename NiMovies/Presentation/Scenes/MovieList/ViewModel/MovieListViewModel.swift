@@ -47,7 +47,7 @@ final class DefaultMovieListViewModel: MovieListViewModel {
     lazy var lastMovieResult: [MovieResult] = []
     
     private lazy var requestsGroup = DispatchGroup()
-    private let router: MovieListRouter
+    private let coordinator: MovieListCoordinator
     private let apiService: MovieListApiService
     private lazy var moviesGenreList: [MovieGenre] = []
     private lazy var movieListResult: [MovieResult] = []
@@ -70,10 +70,10 @@ final class DefaultMovieListViewModel: MovieListViewModel {
     // MARK: - Init -
     
     init(
-        router: MovieListRouter,
+        coordinator: MovieListCoordinator,
         apiService: MovieListApiService
     ) {
-        self.router = router
+        self.coordinator = coordinator
         self.apiService = apiService
     }
     
@@ -169,7 +169,7 @@ final class DefaultMovieListViewModel: MovieListViewModel {
             id: movie.id,
             title: movie.title
         )
-        router.showNiPostDetails(with: movieDetailsConfiguration)
+        coordinator.showMovieDetails(with: movieDetailsConfiguration)
     }
     
     func loadingAnimationCompletionHandler() {

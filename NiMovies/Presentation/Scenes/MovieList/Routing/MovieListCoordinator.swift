@@ -1,5 +1,5 @@
 //
-//  MovieListRouter.swift
+//  MovieListCoordinator.swift
 //  NiMovies
 //
 //  Created by Denys Niestierov on 25.12.2023.
@@ -7,11 +7,11 @@
 
 import UIKit
 
-protocol MovieListRouter {
-    func showNiPostDetails(with configuration: MovieDetailsConfiguration)
+protocol MovieListCoordinator {
+    func showMovieDetails(with configuration: MovieDetailsConfiguration)
 }
 
-final class DefaultMovieListRouter: BaseRouter, MovieListRouter {
+final class DefaultMovieListCoordinator: BaseCoordinator, MovieListCoordinator {
     
     // MARK: - Properties -
     
@@ -23,8 +23,9 @@ final class DefaultMovieListRouter: BaseRouter, MovieListRouter {
         self.root = root
     }
     
-    func showNiPostDetails(with configuration: MovieDetailsConfiguration) {
+    func showMovieDetails(with configuration: MovieDetailsConfiguration) {
         let movieDetails = DefaultMovieDetailsAssembly().createMovieDetails(with: configuration)
         root.navigationController?.pushViewController(movieDetails, animated: true)
     }
 }
+
